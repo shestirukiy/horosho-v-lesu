@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#151816" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="icon" type="image/png" href="./Heart.png" />
+    <title>Хорошо в Лесу</title>
+    <style>
+      :root {
+        --bg-app: #151816;
+        --card-bg: rgba(26, 32, 28, 0.94);
+        --card-border: rgba(255, 255, 255, 0.08);
+        --text-main: #f0f3f1;
+        --text-muted: #8b9990;
+        --text-accent: #2ecc71;
+        --track-bg: #101412;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        -webkit-tap-highlight-color: transparent;
+        user-select: none;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        background-color: #0b0e0c;
+        color: var(--text-main);
+        min-height: 100vh;
+        width: 100vw;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow-x: hidden;
+      }
+
+      #app-window {
+        position: relative;
+        width: 100%;
+        max-width: 520px;
+        min-height: 100vh;
+        background: #151916;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: 10px 14px 14px 14px;
+        gap: 8px;
+        box-shadow: 0 0 40px rgba(0, 0, 0, 0.8);
+      }
+
+      /* Top Window Titlebar (Свернуть / Закрыть) */
+      .window-titlebar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: rgba(0, 0, 0, 0.4);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 12px;
+        padding: 6px 12px;
+      }
+
+      .app-title-tag {
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        color: #a4b0be;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .window-controls-group {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .win-ctrl-btn {
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        color: #fff;
+        border-radius: 8px;
+        padding: 4px 10px;
+        font-size: 11px;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        transition: all 0.15s ease;
+      }
+
+      .win-ctrl-btn:active {
+        transform: scale(0.92);
+      }
+
+      .win-ctrl-btn.minimize {
+        background: rgba(241, 196, 15, 0.15);
+        color: #f1c40f;
+        border-color: rgba(241, 196, 15, 0.3);
+      }
+
+      .win-ctrl-btn.close {
+        background: rgba(231, 76, 60, 0.18);
+        color: #e74c3c;
+        border-color: rgba(231, 76, 60, 0.35);
+      }
+
+      /* Partner Section Card */
+      .partner-card {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 16px;
+        padding: 10px 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+        position: relative;
+        overflow: hidden;
+      }
+
+      /* Card Header */
+      .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .partner-btn {
+        border: none;
+        color: #fff;
+        font-weight: 700;
+        font-size: 16px;
+        letter-spacing: 0.5px;
+        padding: 5px 14px;
+        border-radius: 10px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: transform 0.15s, opacity 0.2s;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+      }
+
+      .partner-btn:active {
+        transform: scale(0.96);
+      }
+
+      .color-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #fff;
+        border: 1px solid rgba(0,0,0,0.3);
+      }
+
+      .avatar-thumb-box {
+        width: 64px;
+        height: 76px;
+        border-radius: 12px;
+        border: 2px solid rgba(255, 255, 255, 0.15);
+        overflow: hidden;
+        background: rgba(0, 0, 0, 0.4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+      }
+
+      .avatar-thumb-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: top center;
+      }
+
+      /* Need Item */
+      .need-block {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        background: rgba(0, 0, 0, 0.25);
+        border-radius: 10px;
+        padding: 6px 10px;
+        border: 1px solid rgba(255, 255, 255, 0.04);
+      }
+
+      .need-top-line {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 12px;
+      }
+
+      .need-name {
+        font-weight: 700;
+        color: #e2e8e5;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .need-icon-small {
+        width: 15px;
+        height: 15px;
+        object-fit: contain;
+      }
+
+      .need-status-label {
+        font-weight: 600;
+        font-size: 11px;
+        padding: 2px 8px;
+        border-radius: 6px;
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      .need-status-label.status-great { color: #2ecc71; background: rgba(46, 204, 113, 0.15); }
+      .need-status-label.status-ok { color: #f1c40f; background: rgba(241, 196, 15, 0.15); }
+      .need-status-label.status-so { color: #e67e22; background: rgba(230, 126, 34, 0.15); }
+      .need-status-label.status-bad { color: #e74c3c; background: rgba(231, 76, 60, 0.15); }
+
+      /* Slider & Controls row */
+      .slider-control-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .stat-slider {
+        flex: 1;
+        -webkit-appearance: none;
+        appearance: none;
+        height: 9px;
+        border-radius: 5px;
+        background: var(--track-bg);
+        outline: none;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        cursor: pointer;
+      }
+
+      .stat-slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: #2ecc71;
+        border: 2px solid #fff;
+        box-shadow: 0 0 6px rgba(0, 0, 0, 0.6);
+        cursor: pointer;
+        transition: transform 0.1s;
+      }
+
+      .stat-slider::-webkit-slider-thumb:active {
+        transform: scale(1.15);
+      }
+
+      .stat-num {
+        font-size: 13px;
+        font-weight: 700;
+        min-width: 18px;
+        text-align: center;
+        color: #fff;
+      }
+
+      .direction-btn {
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: transform 0.15s, background 0.2s;
+        flex-shrink: 0;
+      }
+
+      .direction-btn:active {
+        transform: scale(0.9);
+      }
+
+      .direction-btn img {
+        width: 16px;
+        height: 16px;
+      }
+
+      /* Note / Wish Preview Row */
+      .note-preview-row {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 2px;
+      }
+
+      .note-btn {
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px dashed rgba(255, 255, 255, 0.2);
+        color: var(--text-muted);
+        border-radius: 8px;
+        padding: 3px 8px;
+        font-size: 11px;
+        cursor: pointer;
+        text-align: left;
+        flex: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        transition: all 0.2s;
+      }
+
+      .note-btn.has-content {
+        background: rgba(241, 196, 15, 0.12);
+        border: 1px solid rgba(241, 196, 15, 0.3);
+        color: #f1c40f;
+        font-weight: 600;
+      }
+
+      /* Bottom App Toolbar */
+      .bottom-bar {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 16px;
+        padding: 10px 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+      }
+
+      .bottom-buttons-grid {
+        display: flex;
+        gap: 8px;
+      }
+
+      .action-btn-main {
+        flex: 1;
+        background: #27ae60;
+        border: none;
+        color: #fff;
+        font-weight: 700;
+        font-size: 13px;
+        padding: 9px 12px;
+        border-radius: 10px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        transition: background 0.2s, transform 0.15s;
+        box-shadow: 0 2px 8px rgba(39, 174, 96, 0.35);
+      }
+
+      .action-btn-main:active {
+        transform: scale(0.96);
+      }
+
+      .action-btn-secondary {
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        color: #fff;
+        font-weight: 600;
+        font-size: 13px;
+        padding: 9px 12px;
+        border-radius: 10px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        transition: background 0.2s, transform 0.15s;
+      }
+
+      .action-btn-secondary:active {
+        transform: scale(0.96);
+      }
+
+      .sync-footer-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 11px;
+        color: var(--text-muted);
+        padding-top: 2px;
+      }
+
+      .sync-indicator {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .sync-bulb {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #2ecc71;
+      }
+
+      /* Minimized Compact Bar Mode */
+      #minimized-bar {
+        display: none;
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #1a201c;
+        border: 2px solid #2ecc71;
+        border-radius: 30px;
+        padding: 10px 22px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+        z-index: 200;
+        cursor: pointer;
+        color: #fff;
+        font-weight: 700;
+        font-size: 14px;
+        align-items: center;
+        gap: 10px;
+      }
+
+      #minimized-bar.visible {
+        display: flex;
+      }
+
+      /* Closed App Overlay */
+      #closed-app-screen {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: #000;
+        color: #8b9990;
+        z-index: 300;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 14px;
+        cursor: pointer;
+      }
+
+      #closed-app-screen.visible {
+        display: flex;
+      }
+
+      /* ColoursWidget Modal */
+      .color-palette-pop {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(5px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 100;
+      }
+
+      .color-palette-pop.open {
+        display: flex;
+      }
+
+      .color-modal-box {
+        background: #1b221d;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 20px;
+        padding: 20px;
+        width: 90%;
+        max-width: 340px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+      }
+
+      .color-buttons-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+      }
+
+      .color-choice-btn {
+        height: 48px;
+        border-radius: 12px;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        cursor: pointer;
+        font-weight: 700;
+        color: #fff;
+        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
+        transition: transform 0.15s;
+      }
+
+      .color-choice-btn:active {
+        transform: scale(0.92);
+      }
+
+      /* CommentWidget Modal */
+      .comment-widget-pop {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.75);
+        backdrop-filter: blur(5px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 100;
+      }
+
+      .comment-widget-pop.open {
+        display: flex;
+      }
+
+      .comment-box {
+        background: #1b221d;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 20px;
+        padding: 20px;
+        width: 90%;
+        max-width: 360px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+
+      .comment-textarea {
+        background: #0f1311;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 12px;
+        padding: 12px;
+        color: #fff;
+        font-size: 14px;
+        height: 90px;
+        resize: none;
+        outline: none;
+      }
+
+      .comment-textarea:focus {
+        border-color: #2ecc71;
+      }
+
+      .comment-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .btn-danger {
+        background: rgba(231, 76, 60, 0.2);
+        color: #e74c3c;
+        border: 1px solid rgba(231, 76, 60, 0.4);
+        padding: 8px 14px;
+        border-radius: 10px;
+        cursor: pointer;
+        font-weight: 600;
+      }
+
+      .btn-primary {
+        background: #2ecc71;
+        color: #fff;
+        border: none;
+        padding: 8px 18px;
+        border-radius: 10px;
+        cursor: pointer;
+        font-weight: 700;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Minimized Float Bar -->
+    <div id="minimized-bar">
+      <span>🌲 Хорошо в Лесу</span>
+      <span style="font-size: 12px; color: #2ecc71;">(Нажмите чтобы развернуть)</span>
+    </div>
+
+    <!-- Closed Screen Overlay -->
+    <div id="closed-app-screen">
+      <div style="font-size: 24px;">🔒 Приложение закрыто</div>
+      <div style="font-size: 13px;">Нажмите в любом месте для возобновления</div>
+    </div>
+
+    <div id="app-window">
+      <!-- 0. TOP WINDOW TITLEBAR (Свернуть / Закрыть) -->
+      <header class="window-titlebar">
+        <div class="app-title-tag">
+          <span>🌲</span>
+          <span>Хорошо в Лесу</span>
+        </div>
+        <div class="window-controls-group">
+          <button class="win-ctrl-btn minimize" id="btn-win-minimize" title="Свернуть приложение">
+            <span>_</span>
+            <span>Свернуть</span>
+          </button>
+          <button class="win-ctrl-btn close" id="btn-win-close" title="Закрыть приложение">
+            <span>✕</span>
+            <span>Закрыть</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- 1. ИРИНА CARD -->
+      <section class="partner-card" id="card-irina">
+        <div class="card-header">
+          <div>
+            <button class="partner-btn" id="btn-color-irina" style="background: #f1c40f;">
+              <span class="color-dot"></span>
+              <span id="label-name-irina">ИРИНА</span>
+            </button>
+            <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px; padding-left: 4px;">
+              Цвет: <span id="text-color-irina">Yellow</span>
+            </div>
+          </div>
+          <div class="avatar-thumb-box">
+            <img src="/Слой-3.png" alt="Ирина" class="avatar-thumb-img" id="avatar-img-irina" />
+          </div>
+        </div>
+
+        <!-- Секс -->
+        <div class="need-block">
+          <div class="need-top-line">
+            <span class="need-name"><img src="/Heart.png" class="need-icon-small" />СЕКС</span>
+            <span class="need-status-label status-ok" id="status-text-irina-sex">Так себе</span>
+          </div>
+          <div class="slider-control-row">
+            <input type="range" min="1" max="10" value="5" class="stat-slider" id="slider-irina-sex" />
+            <span class="stat-num" id="num-irina-sex">5</span>
+            <div class="direction-btn" id="dir-btn-irina-sex" title="Динамика"><img src="/dir_equal.png" id="dir-img-irina-sex" /></div>
+          </div>
+          <div class="note-preview-row">
+            <button class="note-btn has-content" id="note-btn-irina-sex">💬 Недостаточный уровень гигиены</button>
+          </div>
+        </div>
+
+        <!-- Общение -->
+        <div class="need-block">
+          <div class="need-top-line">
+            <span class="need-name"><img src="/Bubble.png" class="need-icon-small" />ОБЩЕНИЕ</span>
+            <span class="need-status-label status-great" id="status-text-irina-comm">Нормально</span>
+          </div>
+          <div class="slider-control-row">
+            <input type="range" min="1" max="10" value="8" class="stat-slider" id="slider-irina-comm" />
+            <span class="stat-num" id="num-irina-comm">8</span>
+            <div class="direction-btn" id="dir-btn-irina-comm" title="Динамика"><img src="/dir_equal.png" id="dir-img-irina-comm" /></div>
+          </div>
+          <div class="note-preview-row">
+            <button class="note-btn" id="note-btn-irina-comm">+ Добавить пожелание...</button>
+          </div>
+        </div>
+
+        <!-- Быт -->
+        <div class="need-block">
+          <div class="need-top-line">
+            <span class="need-name"><img src="/Home.png" class="need-icon-small" />БЫТ</span>
+            <span class="need-status-label status-great" id="status-text-irina-dom">Нормально</span>
+          </div>
+          <div class="slider-control-row">
+            <input type="range" min="1" max="10" value="7" class="stat-slider" id="slider-irina-dom" />
+            <span class="stat-num" id="num-irina-dom">7</span>
+            <div class="direction-btn" id="dir-btn-irina-dom" title="Динамика"><img src="/dir_equal.png" id="dir-img-irina-dom" /></div>
+          </div>
+          <div class="note-preview-row">
+            <button class="note-btn" id="note-btn-irina-dom">+ Добавить пожелание...</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. АРТЁМ CARD -->
+      <section class="partner-card" id="card-artem">
+        <div class="card-header">
+          <div>
+            <button class="partner-btn" id="btn-color-artem" style="background: #f1c40f;">
+              <span class="color-dot"></span>
+              <span id="label-name-artem">АРТЁМ</span>
+            </button>
+            <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px; padding-left: 4px;">
+              Цвет: <span id="text-color-artem">Yellow</span>
+            </div>
+          </div>
+          <div class="avatar-thumb-box">
+            <img src="/Слой-2.png" alt="Артём" class="avatar-thumb-img" id="avatar-img-artem" />
+          </div>
+        </div>
+
+        <!-- Секс -->
+        <div class="need-block">
+          <div class="need-top-line">
+            <span class="need-name"><img src="/Heart.png" class="need-icon-small" />СЕКС</span>
+            <span class="need-status-label status-great" id="status-text-artem-sex">Нормально</span>
+          </div>
+          <div class="slider-control-row">
+            <input type="range" min="1" max="10" value="7" class="stat-slider" id="slider-artem-sex" />
+            <span class="stat-num" id="num-artem-sex">7</span>
+            <div class="direction-btn" id="dir-btn-artem-sex" title="Динамика"><img src="/dir_equal.png" id="dir-img-artem-sex" /></div>
+          </div>
+          <div class="note-preview-row">
+            <button class="note-btn" id="note-btn-artem-sex">+ Добавить пожелание...</button>
+          </div>
+        </div>
+
+        <!-- Общение -->
+        <div class="need-block">
+          <div class="need-top-line">
+            <span class="need-name"><img src="/Bubble.png" class="need-icon-small" />ОБЩЕНИЕ</span>
+            <span class="need-status-label status-great" id="status-text-artem-comm">Нормально</span>
+          </div>
+          <div class="slider-control-row">
+            <input type="range" min="1" max="10" value="8" class="stat-slider" id="slider-artem-comm" />
+            <span class="stat-num" id="num-artem-comm">8</span>
+            <div class="direction-btn" id="dir-btn-artem-comm" title="Динамика"><img src="/dir_equal.png" id="dir-img-artem-comm" /></div>
+          </div>
+          <div class="note-preview-row">
+            <button class="note-btn" id="note-btn-artem-comm">+ Добавить пожелание...</button>
+          </div>
+        </div>
+
+        <!-- Быт -->
+        <div class="need-block">
+          <div class="need-top-line">
+            <span class="need-name"><img src="/Home.png" class="need-icon-small" />БЫТ</span>
+            <span class="need-status-label status-great" id="status-text-artem-dom">Нормально</span>
+          </div>
+          <div class="slider-control-row">
+            <input type="range" min="1" max="10" value="7" class="stat-slider" id="slider-artem-dom" />
+            <span class="stat-num" id="num-artem-dom">7</span>
+            <div class="direction-btn" id="dir-btn-artem-dom" title="Динамика"><img src="/dir_equal.png" id="dir-img-artem-dom" /></div>
+          </div>
+          <div class="note-preview-row">
+            <button class="note-btn" id="note-btn-artem-dom">+ Добавить пожелание...</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. BOTTOM TOOLBAR -->
+      <footer class="bottom-bar">
+        <div class="bottom-buttons-grid">
+          <!-- Обновить данные (Google Docs) -->
+          <button class="action-btn-main" id="btn-main-refresh" title="Получить свежие статусы из Google Docs">
+            <span id="refresh-icon">🔄</span>
+            <span>Обновить данные</span>
+          </button>
+
+          <!-- Обновить программу (Reload / Update app) -->
+          <button class="action-btn-secondary" id="btn-update-app" title="Перезагрузить последнюю версию приложения">
+            <span>🚀</span>
+            <span>Обновить программу</span>
+          </button>
+        </div>
+
+        <div class="sync-footer-bar">
+          <div class="sync-indicator">
+            <div class="sync-bulb" id="sync-bulb"></div>
+            <span id="sync-status-msg">Синхронизировано</span>
+          </div>
+          <span style="opacity: 0.6;">v1.0.2</span>
+        </div>
+      </footer>
+
+      <!-- 4. ColoursWidget Popup -->
+      <div class="color-palette-pop" id="colours-widget">
+        <div class="color-modal-box">
+          <div style="font-weight: 700; font-size: 16px;">Выберите цвет настроения:</div>
+          <div class="color-buttons-grid">
+            <button class="color-choice-btn" data-color="Green" style="background: #2ecc71;">Зелёный</button>
+            <button class="color-choice-btn" data-color="Yellow" style="background: #f1c40f;">Жёлтый</button>
+            <button class="color-choice-btn" data-color="Orange" style="background: #e67e22;">Оранжевый</button>
+            <button class="color-choice-btn" data-color="Red" style="background: #e74c3c;">Красный</button>
+            <button class="color-choice-btn" data-color="Blue" style="background: #3498db;">Синий</button>
+            <button class="color-choice-btn" data-color="Purple" style="background: #9b59b6;">Фиолет</button>
+          </div>
+          <button class="btn-danger" id="btn-close-palette" style="width: 100%;">Закрыть</button>
+        </div>
+      </div>
+
+      <!-- 5. CommentWidget Popup -->
+      <div class="comment-widget-pop" id="comment-widget">
+        <div class="comment-box">
+          <div style="font-weight: 700; font-size: 15px;" id="comment-modal-title">Заметка: Секс</div>
+          <textarea class="comment-textarea" id="comment-input" placeholder="Введите пожелание или заметку..."></textarea>
+          <div class="comment-actions">
+            <button class="btn-danger" id="btn-comment-clear">Очистить</button>
+            <button class="btn-primary" id="btn-comment-enter">Enter (Сохранить)</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
