@@ -1,0 +1,9 @@
+{
+  "appId": "com.shestirukiy.horoshovlesu",
+  "appName": "Хорошо в Лесу",
+  "webDir": "dist",
+  "server": {
+    "url": "https://shestirukiy.github.io/horosho-v-lesu/",
+    "cleartext": true
+  }
+}
