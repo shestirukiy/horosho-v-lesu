@@ -290,6 +290,29 @@ async function saveComment(text: string) {
 
 // Window Controls (Свернуть / Закрыть / Обновить программу)
 function initWindowControls() {
+  // PWA Install prompt
+  let deferredPrompt: any = null;
+  const btnPwaInstall = document.getElementById('btn-pwa-install') as HTMLButtonElement;
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    if (btnPwaInstall) {
+      btnPwaInstall.style.display = 'inline-flex';
+    }
+  });
+
+  btnPwaInstall?.addEventListener('click', async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        btnPwaInstall.style.display = 'none';
+      }
+      deferredPrompt = null;
+    }
+  });
+
   // Свернуть
   btnWinMinimize.addEventListener('click', () => {
     appWindow.style.display = 'none';
