@@ -14,11 +14,13 @@
         android:scaleType="centerCrop"
         android:contentDescription="Портрет партнера" />
 
-    <!-- 2. Dark Scrim Gradient for HUD Contrast -->
-    <View
+    <!-- 2. Dark Scrim Gradient for HUD Contrast (ImageView instead of raw View) -->
+    <ImageView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@drawable/widget_scrim" />
+        android:src="@drawable/widget_scrim"
+        android:scaleType="fitXY"
+        android:contentDescription="" />
 
     <!-- 3. Foreground HUD Content -->
     <LinearLayout
@@ -36,8 +38,9 @@
 
             <TextView
                 android:id="@+id/widget_partner_name"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_weight="1"
                 android:text="ИРИНА"
                 android:textColor="#FFFFFF"
                 android:textSize="14sp"
@@ -48,11 +51,6 @@
                 android:shadowRadius="4"
                 android:paddingStart="4dp"
                 android:paddingEnd="4dp" />
-
-            <View
-                android:layout_width="0dp"
-                android:layout_height="1dp"
-                android:layout_weight="1" />
 
             <TextView
                 android:id="@+id/widget_btn_switch"
@@ -67,8 +65,8 @@
                 android:background="@drawable/widget_hud_row_bg" />
         </LinearLayout>
 
-        <!-- Flexible Spacer pushes HUD to bottom -->
-        <View
+        <!-- Flexible Spacer pushes HUD to bottom (FrameLayout instead of raw View) -->
+        <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1" />
@@ -101,7 +99,7 @@
 
                 <ProgressBar
                     android:id="@+id/widget_pb_sex"
-                    style="?android:attr/progressBarStyleHorizontal"
+                    style="@android:style/Widget.ProgressBar.Horizontal"
                     android:layout_width="0dp"
                     android:layout_height="6dp"
                     android:layout_weight="1"
@@ -151,7 +149,7 @@
 
                 <ProgressBar
                     android:id="@+id/widget_pb_comm"
-                    style="?android:attr/progressBarStyleHorizontal"
+                    style="@android:style/Widget.ProgressBar.Horizontal"
                     android:layout_width="0dp"
                     android:layout_height="6dp"
                     android:layout_weight="1"
@@ -200,7 +198,7 @@
 
                 <ProgressBar
                     android:id="@+id/widget_pb_dom"
-                    style="?android:attr/progressBarStyleHorizontal"
+                    style="@android:style/Widget.ProgressBar.Horizontal"
                     android:layout_width="0dp"
                     android:layout_height="6dp"
                     android:layout_weight="1"
