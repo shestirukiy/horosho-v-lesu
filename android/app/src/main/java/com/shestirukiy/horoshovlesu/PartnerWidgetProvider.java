@@ -84,23 +84,18 @@ public class PartnerWidgetProvider extends AppWidgetProvider {
         String commDir = prefs.getString("stat_dir_comm_" + partner, "(=)");
         String domDir = prefs.getString("stat_dir_dom_" + partner, "(=)");
 
-        // Set Partner Info & Large Photo
+        // Set Partner Info
         views.setTextViewText(R.id.widget_partner_name, partner.toUpperCase());
 
         if ("Артем".equals(partner)) {
-            views.setImageViewResource(R.id.widget_bg_photo, R.drawable.avatar_artem_card);
+            views.setImageViewResource(R.id.widget_partner_avatar, R.drawable.avatar_artem);
         } else {
-            views.setImageViewResource(R.id.widget_bg_photo, R.drawable.avatar_irina_card);
+            views.setImageViewResource(R.id.widget_partner_avatar, R.drawable.avatar_irina);
         }
 
-        // Set Progress Bars & Values
-        views.setProgressBar(R.id.widget_pb_sex, 10, sexVal, false);
+        // Set Need Values
         views.setTextViewText(R.id.widget_val_sex, String.valueOf(sexVal));
-
-        views.setProgressBar(R.id.widget_pb_comm, 10, commVal, false);
         views.setTextViewText(R.id.widget_val_comm, String.valueOf(commVal));
-
-        views.setProgressBar(R.id.widget_pb_dom, 10, domVal, false);
         views.setTextViewText(R.id.widget_val_dom, String.valueOf(domVal));
 
         // Set Direction Icons
