@@ -54,14 +54,18 @@ jobs:
           ./gradlew assembleDebug
           cd ..
           cp android/app/build/outputs/apk/debug/app-debug.apk HoroshoVLesu.apk
+          zip -j HoroshoVLesu.zip HoroshoVLesu.apk
           mkdir -p public
           cp HoroshoVLesu.apk public/HoroshoVLesu.apk
+          cp HoroshoVLesu.zip public/HoroshoVLesu.zip
 
       - name: Upload APK Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: HoroshoVLesu-APK
-          path: HoroshoVLesu.apk
+          path: |
+            HoroshoVLesu.apk
+            HoroshoVLesu.zip
 
       - name: Create or Update GitHub Release
         uses: softprops/action-gh-release@v2
@@ -71,7 +75,8 @@ jobs:
           name: "Horosho V Lesu (Android APK v1.5)"
           body: |
             ### 🌲 Хорошо в Лесу v1.5 (Единый APK для обоих!):
-            * 📲 **[Скачать HoroshoVLesu.apk](https://github.com/shestirukiy/horosho-v-lesu/releases/download/latest/HoroshoVLesu.apk)** — единый файл для Артёма и Ирины с классической общей иконкой на рабочем столе!
+            * 📲 **[Скачать HoroshoVLesu.apk](https://github.com/shestirukiy/horosho-v-lesu/releases/download/latest/HoroshoVLesu.apk)**
+            * 📦 **[Скачать HoroshoVLesu.zip](https://github.com/shestirukiy/horosho-v-lesu/releases/download/latest/HoroshoVLesu.zip)** (в архиве, если браузер блокирует прямое скачивание APK)
 
             **🎮 В виджете:**
             * Крупное фото партнера на весь фон виджета с аккуратным затемнением.
@@ -79,5 +84,6 @@ jobs:
             * Кнопка `🔄` прямо на виджете для мгновенного переключения партнера.
           files: |
             HoroshoVLesu.apk
+            HoroshoVLesu.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
