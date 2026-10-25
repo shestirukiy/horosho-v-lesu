@@ -70,12 +70,14 @@ jobs:
           tag_name: latest
           name: "Horosho V Lesu (Android APKs)"
           body: |
-            ### 📱 Хорошо в Лесу — Персональные APK для Android:
-            * 👩 **Для Артёма**: [HoroshoVLesu-Artem.apk](https://github.com/shestirukiy/horosho-v-lesu/releases/download/latest/HoroshoVLesu-Artem.apk) (ярлык на рабочем столе с фото Ирины)
-            * 👨 **Для Ирины**: [HoroshoVLesu-Irina.apk](https://github.com/shestirukiy/horosho-v-lesu/releases/download/latest/HoroshoVLesu-Irina.apk) (ярлык на рабочем столе с фото Артёма)
+            ### 📱 Хорошо в Лесу v1.1 (с Виджетом рабочего стола!):
+            * 👩 **Для Артёма**: [HoroshoVLesu-Artem.apk](https://github.com/shestirukiy/horosho-v-lesu/releases/download/latest/HoroshoVLesu-Artem.apk) (ярлык на рабочем столе с фото Ирины + виджет статуса Ирины)
+            * 👨 **Для Ирины**: [HoroshoVLesu-Irina.apk](https://github.com/shestirukiy/horosho-v-lesu/releases/download/latest/HoroshoVLesu-Irina.apk) (ярлык на рабочем столе с фото Артёма + виджет статуса Артёма)
             * 🌲 **Универсальный**: [HoroshoVLesu.apk](https://github.com/shestirukiy/horosho-v-lesu/releases/download/latest/HoroshoVLesu.apk)
 
-            *Установите прямо поверх старого приложения (нажав «Обновить»). Все последующие обновления будут прилетать автоматически по воздуху без переустановок!*
+            **Новинка: Нативный виджет на рабочий стол Android!**
+            * Нажмите пальцем на пустом месте рабочего стола -> «Виджеты» -> найдите «Хорошо в Лесу».
+            * Виджет показывает аватарку партнера и 3 сферы жизни (Секс ❤️, Общение 💬, Быт 🏠) с актуальными цифрами. При клике сразу открывает приложение!
           files: |
             HoroshoVLesu-Artem.apk
             HoroshoVLesu-Irina.apk

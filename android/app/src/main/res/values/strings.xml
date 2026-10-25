@@ -4,4 +4,6 @@
     <string name="title_activity_main">Хорошо в Лесу</string>
     <string name="package_name">com.shestirukiy.horoshovlesu</string>
     <string name="custom_url_scheme">com.shestirukiy.horoshovlesu</string>
+    <string name="widget_description">Статус партнера и сферы жизни (Секс, Общение, Быт)</string>
+    <string name="widget_target_partner">Ирина</string>
 </resources>

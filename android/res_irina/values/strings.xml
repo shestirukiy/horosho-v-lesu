@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Хорошо в Лесу</string>
+    <string name="title_activity_main">Хорошо в Лесу</string>
+    <string name="package_name">com.shestirukiy.horoshovlesu</string>
+    <string name="custom_url_scheme">com.shestirukiy.horoshovlesu</string>
+    <string name="widget_description">Статус партнера и сферы жизни (Секс, Общение, Быт)</string>
+    <string name="widget_target_partner">Артем</string>
+</resources>
