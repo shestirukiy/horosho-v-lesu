@@ -28,6 +28,19 @@ public class MainActivity extends BridgeActivity {
                     public String getApkVersion() {
                         return getApkVersionString();
                     }
+
+                    @JavascriptInterface
+                    public void setTargetPartner(String partnerName) {
+                        try {
+                            getSharedPreferences("horosho_widget_prefs", MODE_PRIVATE)
+                                .edit()
+                                .putString("target_partner", partnerName)
+                                .apply();
+                            PartnerWidgetProvider.fetchAndRefreshWidgets(MainActivity.this);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
                 }, "AndroidNativeBridge");
             }
         } catch (Exception e) {

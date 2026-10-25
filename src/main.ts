@@ -87,15 +87,8 @@ function showToast(message: string, durationMs = 2500) {
 }
 
 // App Icon switching (Changes to spouse's picture when logged in)
-function updateAppIcon(mode: UserMode) {
-  let iconUrl = './Heart.png';
-  if (mode === 'Артем') {
-    // External app icon on Artem's phone shows spouse Irina
-    iconUrl = './icon-irina-192.png';
-  } else if (mode === 'Ирина') {
-    // External app icon on Irina's phone shows spouse Artem
-    iconUrl = './icon-artem-192.png';
-  }
+function updateAppIcon(_mode: UserMode) {
+  const iconUrl = './Heart.png';
 
   // Favicon & Apple touch icon with cache-busting
   document.querySelectorAll("link[rel*='icon']").forEach((el) => el.remove());
@@ -114,6 +107,15 @@ function updateAppIcon(mode: UserMode) {
 // Apply User Mode UI (cards styles, tags, sliders disabled state, user badge photo)
 function applyUserModeUI() {
   updateAppIcon(currentUserMode);
+
+  // Sync partner to native widget:
+  // If Artem logged in -> widget shows spouse Irina
+  // If Irina logged in -> widget shows spouse Artem
+  if (currentUserMode === 'Артем') {
+    (window as any).AndroidNativeBridge?.setTargetPartner?.('Ирина');
+  } else if (currentUserMode === 'Ирина') {
+    (window as any).AndroidNativeBridge?.setTargetPartner?.('Артем');
+  }
 
   if (currentUserMode === 'none') {
     if (userModeBadge) userModeBadge.style.display = 'none';
@@ -488,13 +490,8 @@ function initWindowControls() {
     const bridgeVer = (window as any).AndroidNativeBridge?.getApkVersion?.() || (window as any).__NATIVE_APK_VERSION__;
 
     if (isCapacitor && !bridgeVer) {
-      showToast('📥 Скачивание обновления APK v1.5...', 4000);
-      let apkUrl = 'https://shestirukiy.github.io/horosho-v-lesu/HoroshoVLesu-Artem.apk';
-      if (currentUserMode === 'Ирина') {
-        apkUrl = 'https://shestirukiy.github.io/horosho-v-lesu/HoroshoVLesu-Irina.apk';
-      } else if (currentUserMode === 'Артем') {
-        apkUrl = 'https://shestirukiy.github.io/horosho-v-lesu/HoroshoVLesu-Artem.apk';
-      }
+      showToast('📥 Скачивание единого обновления APK v1.5...', 4000);
+      const apkUrl = 'https://shestirukiy.github.io/horosho-v-lesu/HoroshoVLesu.apk';
       setTimeout(() => {
         window.location.href = apkUrl;
       }, 500);
@@ -662,13 +659,8 @@ function setupVersionDisplay() {
     if (cur) {
       showToast(`Установлен актуальный APK: ${cur}. Поддержка нативного виджета активна!`, 3500);
     } else if ((window as any).Capacitor) {
-      showToast('📥 Скачивание обновления APK v1.5...', 4000);
-      let apkUrl = 'https://shestirukiy.github.io/horosho-v-lesu/HoroshoVLesu-Artem.apk';
-      if (currentUserMode === 'Ирина') {
-        apkUrl = 'https://shestirukiy.github.io/horosho-v-lesu/HoroshoVLesu-Irina.apk';
-      } else if (currentUserMode === 'Артем') {
-        apkUrl = 'https://shestirukiy.github.io/horosho-v-lesu/HoroshoVLesu-Artem.apk';
-      }
+      showToast('📥 Скачивание единого обновления APK v1.5...', 4000);
+      const apkUrl = 'https://shestirukiy.github.io/horosho-v-lesu/HoroshoVLesu.apk';
       setTimeout(() => {
         window.location.href = apkUrl;
       }, 500);
