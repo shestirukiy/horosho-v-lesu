@@ -545,11 +545,11 @@ function initWindowControls() {
 
     if (isCapacitor && !bridgeVer) {
       showToast('📥 Скачивание обновления APK v1.3.1...', 4000);
-      let apkUrl = 'https://github.com/shestirukiy/horosho-v-lesu/releases/tag/latest';
+      let apkUrl = 'https://shestirukiy.github.io/horosho-v-lesu/HoroshoVLesu-Artem.apk';
       if (currentUserMode === 'Ирина') {
-        apkUrl = 'https://github.com/shestirukiy/horosho-v-lesu/releases/download/latest/HoroshoVLesu-Irina.apk';
+        apkUrl = 'https://shestirukiy.github.io/horosho-v-lesu/HoroshoVLesu-Irina.apk';
       } else if (currentUserMode === 'Артем') {
-        apkUrl = 'https://github.com/shestirukiy/horosho-v-lesu/releases/download/latest/HoroshoVLesu-Artem.apk';
+        apkUrl = 'https://shestirukiy.github.io/horosho-v-lesu/HoroshoVLesu-Artem.apk';
       }
       setTimeout(() => {
         window.location.href = apkUrl;
@@ -736,11 +736,11 @@ function setupVersionDisplay() {
       showToast(`Установлен актуальный APK: ${cur}. Поддержка нативного виджета активна!`, 3500);
     } else if ((window as any).Capacitor) {
       showToast('📥 Скачивание обновления APK v1.3.1...', 4000);
-      let apkUrl = 'https://github.com/shestirukiy/horosho-v-lesu/releases/tag/latest';
+      let apkUrl = 'https://shestirukiy.github.io/horosho-v-lesu/HoroshoVLesu-Artem.apk';
       if (currentUserMode === 'Ирина') {
-        apkUrl = 'https://github.com/shestirukiy/horosho-v-lesu/releases/download/latest/HoroshoVLesu-Irina.apk';
+        apkUrl = 'https://shestirukiy.github.io/horosho-v-lesu/HoroshoVLesu-Irina.apk';
       } else if (currentUserMode === 'Артем') {
-        apkUrl = 'https://github.com/shestirukiy/horosho-v-lesu/releases/download/latest/HoroshoVLesu-Artem.apk';
+        apkUrl = 'https://shestirukiy.github.io/horosho-v-lesu/HoroshoVLesu-Artem.apk';
       }
       setTimeout(() => {
         window.location.href = apkUrl;
