@@ -177,12 +177,15 @@
         cursor: pointer;
         transition: transform 0.12s ease, border-color 0.2s, box-shadow 0.2s;
         position: relative;
+        touch-action: manipulation;
+        user-select: none;
+        -webkit-user-select: none;
       }
 
       .avatar-thumb-box:active {
-        transform: scale(0.92);
+        transform: scale(0.9);
         border-color: #2ecc71;
-        box-shadow: 0 0 12px rgba(46, 204, 113, 0.6);
+        box-shadow: 0 0 15px rgba(46, 204, 113, 0.8);
       }
 
       /* Role lock badges */
@@ -299,6 +302,10 @@
         height: 100%;
         object-fit: cover;
         object-position: top center;
+        pointer-events: none;
+        user-select: none;
+        -webkit-user-select: none;
+        -webkit-touch-callout: none;
       }
 
       /* Need Item */
@@ -716,7 +723,7 @@
       <!-- 0. TOP WINDOW TITLEBAR (Свернуть / Закрыть) -->
       <header class="window-titlebar">
         <div class="app-title-tag">
-          <span>🌲</span>
+          <img id="header-main-icon" src="./Heart.png" style="width:20px;height:20px;border-radius:50%;object-fit:cover;border:1px solid rgba(255,255,255,0.3);" />
           <span>Хорошо в Лесу</span>
         </div>
         <div id="user-mode-badge" style="display:none;" class="user-logged-badge">

@@ -65,6 +65,7 @@ const syncStatusMsg = document.getElementById('sync-status-msg') as HTMLSpanElem
 const btnMainRefresh = document.getElementById('btn-main-refresh') as HTMLButtonElement;
 const refreshIcon = document.getElementById('refresh-icon') as HTMLSpanElement;
 const btnUpdateApp = document.getElementById('btn-update-app') as HTMLButtonElement;
+const headerMainIcon = document.getElementById('header-main-icon') as HTMLImageElement;
 
 // User Mode Elements
 const userModeBadge = document.getElementById('user-mode-badge') as HTMLDivElement;
@@ -111,11 +112,24 @@ function updateAppIcon(mode: UserMode) {
     iconUrl = './icon-artem-192.png';
   }
 
-  if (appFavicon) appFavicon.href = iconUrl;
-  if (appTouchIcon) appTouchIcon.href = iconUrl;
+  // Update in-app topbar icon
+  if (headerMainIcon) {
+    headerMainIcon.src = iconUrl;
+    headerMainIcon.style.borderColor = mode !== 'none' ? '#2ecc71' : 'rgba(255,255,255,0.3)';
+  }
 
-  const links = document.querySelectorAll<HTMLLinkElement>("link[rel*='icon']");
-  links.forEach((l) => (l.href = iconUrl));
+  // Favicon & Apple touch icon with cache-busting
+  document.querySelectorAll("link[rel*='icon']").forEach((el) => el.remove());
+  const newLink = document.createElement('link');
+  newLink.rel = 'icon';
+  newLink.type = 'image/png';
+  newLink.href = `${iconUrl}?v=${Date.now()}`;
+  document.head.appendChild(newLink);
+
+  const newApple = document.createElement('link');
+  newApple.rel = 'apple-touch-icon';
+  newApple.href = `${iconUrl}?v=${Date.now()}`;
+  document.head.appendChild(newApple);
 }
 
 // Apply User Mode UI (cards styles, tags, sliders disabled state, spouse icon)
@@ -205,20 +219,24 @@ function handleAvatarTap(partner: Partner) {
   }
   tracker.lastTime = now;
 
+  try {
+    if ('vibrate' in navigator) navigator.vibrate(20);
+  } catch {}
+
   if (currentUserMode === partner) {
-    showToast(`Вы уже авторизованы как ${partner} 👤`);
+    showToast(`Вы уже авторизованы как ${partner} 👤`, 1200);
     return;
   }
 
-  if (tracker.count >= 3 && tracker.count < 10) {
+  if (tracker.count < 10) {
     const left = 10 - tracker.count;
     const word = left === 1 ? 'нажатие' : left < 5 ? 'нажатия' : 'нажатий';
-    showToast(`Вход как ${partner}: ещё ${left} ${word}...`, 900);
+    showToast(`Вход как ${partner}: ${tracker.count}/10 (ещё ${left} ${word})...`, 900);
   } else if (tracker.count >= 10) {
     tracker.count = 0;
     setUserMode(partner);
     const spouse = partner === 'Артем' ? 'Ирины' : 'Артёма';
-    showToast(`👤 Вы вошли как ${partner}! Параметры ${spouse} заблокированы от случайных изменений.`, 3500);
+    showToast(`👤 Вы вошли как ${partner}! Иконка изменена на ${partner === 'Артем' ? 'Ирину' : 'Артёма'}. Параметры ${spouse} заблокированы.`, 4000);
   }
 }
 
@@ -547,9 +565,24 @@ function initListeners() {
     showToast('🔓 Вы вышли из режима аккаунта. Все параметры доступны.');
   });
 
-  // 10-tap Avatar Listeners
-  document.getElementById('avatar-box-irina')?.addEventListener('click', () => handleAvatarTap('Ирина'));
-  document.getElementById('avatar-box-artem')?.addEventListener('click', () => handleAvatarTap('Артем'));
+  // 10-tap Avatar Listeners with fast touch responsiveness
+  const bindFastTap = (boxId: string, partner: Partner) => {
+    const el = document.getElementById(boxId);
+    if (!el) return;
+    let lastTap = 0;
+    const handler = (e: Event) => {
+      e.preventDefault();
+      const now = Date.now();
+      if (now - lastTap < 120) return; // debounce double trigger
+      lastTap = now;
+      handleAvatarTap(partner);
+    };
+    el.addEventListener('pointerdown', handler);
+    el.addEventListener('click', handler);
+  };
+
+  bindFastTap('avatar-box-irina', 'Ирина');
+  bindFastTap('avatar-box-artem', 'Артем');
 
   // Palette triggers
   document.getElementById('btn-color-irina')?.addEventListener('click', () => openColorPalette('Ирина'));
