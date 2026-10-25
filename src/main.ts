@@ -505,6 +505,21 @@ function initWindowControls() {
       window.location.reload();
     }, 300);
   });
+
+  // Direct Download buttons (open via system browser to avoid in-app webview freeze)
+  document.getElementById('btn-download-apk')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    const url = 'https://shestirukiy.github.io/horosho-v-lesu/HoroshoVLesu.apk';
+    showToast('📲 Открытие загрузчика APK...', 2500);
+    window.open(url, '_system');
+  });
+
+  document.getElementById('btn-download-zip')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    const url = 'https://shestirukiy.github.io/horosho-v-lesu/HoroshoVLesu.zip';
+    showToast('📦 Открытие загрузчика ZIP...', 2500);
+    window.open(url, '_system');
+  });
 }
 
 // Setup Event Listeners
