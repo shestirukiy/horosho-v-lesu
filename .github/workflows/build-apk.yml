@@ -36,29 +36,49 @@ jobs:
       - name: Sync Capacitor
         run: npx cap sync android
 
-      - name: Build Android Debug APK
+      - name: Build APK for Artem (Spouse Irina Icon)
         run: |
+          cp -r android/res_artem/* android/app/src/main/res/
           cd android
           chmod +x gradlew
           ./gradlew assembleDebug
+          cd ..
+          cp android/app/build/outputs/apk/debug/app-debug.apk HoroshoVLesu-Artem.apk
+          cp HoroshoVLesu-Artem.apk HoroshoVLesu.apk
 
-      - name: Rename APK
+      - name: Build APK for Irina (Spouse Artem Icon)
         run: |
-          cp android/app/build/outputs/apk/debug/app-debug.apk HoroshoVLesu.apk
+          cp -r android/res_irina/* android/app/src/main/res/
+          cd android
+          ./gradlew assembleDebug
+          cd ..
+          cp android/app/build/outputs/apk/debug/app-debug.apk HoroshoVLesu-Irina.apk
 
-      - name: Upload APK Artifact
+      - name: Upload APK Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: HoroshoVLesu-APK
-          path: HoroshoVLesu.apk
+          name: HoroshoVLesu-APKs
+          path: |
+            HoroshoVLesu-Artem.apk
+            HoroshoVLesu-Irina.apk
+            HoroshoVLesu.apk
 
       - name: Create or Update GitHub Release
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/main'
         with:
           tag_name: latest
-          name: "Horosho V Lesu (Android APK)"
-          body: "Скачайте HoroshoVLesu.apk и установите на Android телефон. Приложение будет автоматически обновляться через веб-сервер!"
-          files: HoroshoVLesu.apk
+          name: "Horosho V Lesu (Android APKs)"
+          body: |
+            ### 📱 Хорошо в Лесу — Персональные APK для Android:
+            * 👩 **Для Артёма**: [HoroshoVLesu-Artem.apk](https://github.com/shestirukiy/horosho-v-lesu/releases/download/latest/HoroshoVLesu-Artem.apk) (ярлык на рабочем столе с фото Ирины)
+            * 👨 **Для Ирины**: [HoroshoVLesu-Irina.apk](https://github.com/shestirukiy/horosho-v-lesu/releases/download/latest/HoroshoVLesu-Irina.apk) (ярлык на рабочем столе с фото Артёма)
+            * 🌲 **Универсальный**: [HoroshoVLesu.apk](https://github.com/shestirukiy/horosho-v-lesu/releases/download/latest/HoroshoVLesu.apk)
+
+            *Установите прямо поверх старого приложения (нажав «Обновить»). Все последующие обновления будут прилетать автоматически по воздуху без переустановок!*
+          files: |
+            HoroshoVLesu-Artem.apk
+            HoroshoVLesu-Irina.apk
+            HoroshoVLesu.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
