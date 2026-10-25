@@ -66,11 +66,10 @@ const syncStatusMsg = document.getElementById('sync-status-msg') as HTMLSpanElem
 const btnMainRefresh = document.getElementById('btn-main-refresh') as HTMLButtonElement;
 const refreshIcon = document.getElementById('refresh-icon') as HTMLSpanElement;
 const btnUpdateApp = document.getElementById('btn-update-app') as HTMLButtonElement;
-const headerMainIcon = document.getElementById('header-main-icon') as HTMLImageElement;
 
 // User Mode Elements
 const userModeBadge = document.getElementById('user-mode-badge') as HTMLDivElement;
-const badgeSpouseImg = document.getElementById('badge-spouse-img') as HTMLImageElement;
+const badgeUserImg = document.getElementById('badge-user-img') as HTMLImageElement;
 const badgeUserName = document.getElementById('badge-user-name') as HTMLSpanElement;
 const btnUserLogout = document.getElementById('btn-user-logout') as HTMLButtonElement;
 const toastNotification = document.getElementById('toast-notification') as HTMLDivElement;
@@ -106,17 +105,11 @@ function showToast(message: string, durationMs = 2500) {
 function updateAppIcon(mode: UserMode) {
   let iconUrl = './Heart.png';
   if (mode === 'Артем') {
-    // Logged in as Artem -> icon is spouse Irina
+    // External app icon on Artem's phone shows spouse Irina
     iconUrl = './icon-irina-192.png';
   } else if (mode === 'Ирина') {
-    // Logged in as Irina -> icon is spouse Artem
+    // External app icon on Irina's phone shows spouse Artem
     iconUrl = './icon-artem-192.png';
-  }
-
-  // Update in-app topbar icon
-  if (headerMainIcon) {
-    headerMainIcon.src = iconUrl;
-    headerMainIcon.style.borderColor = mode !== 'none' ? '#2ecc71' : 'rgba(255,255,255,0.3)';
   }
 
   // Favicon & Apple touch icon with cache-busting
@@ -133,7 +126,7 @@ function updateAppIcon(mode: UserMode) {
   document.head.appendChild(newApple);
 }
 
-// Apply User Mode UI (cards styles, tags, sliders disabled state, spouse icon)
+// Apply User Mode UI (cards styles, tags, sliders disabled state, user badge photo)
 function applyUserModeUI() {
   updateAppIcon(currentUserMode);
 
@@ -143,8 +136,9 @@ function applyUserModeUI() {
     if (userModeBadge) {
       userModeBadge.style.display = 'flex';
       badgeUserName.textContent = `Вы: ${currentUserMode}`;
-      const spouseIcon = currentUserMode === 'Артем' ? './icon-irina-192.png' : './icon-artem-192.png';
-      if (badgeSpouseImg) badgeSpouseImg.src = spouseIcon;
+      // In the badge next to "Вы: Ирина" / "Вы: Артём" show the logged in user's portrait!
+      const userPhoto = currentUserMode === 'Артем' ? './icon-artem-192.png' : './icon-irina-192.png';
+      if (badgeUserImg) badgeUserImg.src = userPhoto;
     }
   }
 
