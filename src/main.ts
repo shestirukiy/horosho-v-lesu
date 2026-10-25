@@ -488,7 +488,7 @@ function initWindowControls() {
     const bridgeVer = (window as any).AndroidNativeBridge?.getApkVersion?.() || (window as any).__NATIVE_APK_VERSION__;
 
     if (isCapacitor && !bridgeVer) {
-      showToast('📥 Скачивание обновления APK v1.3.1...', 4000);
+      showToast('📥 Скачивание обновления APK v1.5...', 4000);
       let apkUrl = 'https://shestirukiy.github.io/horosho-v-lesu/HoroshoVLesu-Artem.apk';
       if (currentUserMode === 'Ирина') {
         apkUrl = 'https://shestirukiy.github.io/horosho-v-lesu/HoroshoVLesu-Irina.apk';
@@ -613,7 +613,7 @@ function setupVersionDisplay() {
         headerBadge.title = `Установлен нативный APK ${apkVer} (виджет поддерживается)`;
       }
       if (footerBadge) {
-        footerBadge.textContent = `${text} • Web v1.3`;
+        footerBadge.textContent = `${text} • Web v1.5`;
         footerBadge.style.color = '#2ecc71';
         footerBadge.style.opacity = '0.9';
       }
@@ -624,14 +624,14 @@ function setupVersionDisplay() {
         if (headerBadge) {
           headerBadge.textContent = text;
           headerBadge.style.color = '#e67e22';
-          headerBadge.title = 'Обновите APK до v1.3 в релизах, чтобы появился виджет';
+          headerBadge.title = 'Обновите APK до v1.5 в релизах, чтобы появился виджет';
         }
         if (footerBadge) {
-          footerBadge.textContent = `${text} • Web v1.3`;
+          footerBadge.textContent = `${text} • Web v1.5`;
           footerBadge.style.color = '#e67e22';
         }
       } else {
-        const text = `Web v1.3`;
+        const text = `Web v1.5`;
         if (headerBadge) headerBadge.textContent = text;
         if (footerBadge) footerBadge.textContent = text;
       }
@@ -662,7 +662,7 @@ function setupVersionDisplay() {
     if (cur) {
       showToast(`Установлен актуальный APK: ${cur}. Поддержка нативного виджета активна!`, 3500);
     } else if ((window as any).Capacitor) {
-      showToast('📥 Скачивание обновления APK v1.3.1...', 4000);
+      showToast('📥 Скачивание обновления APK v1.5...', 4000);
       let apkUrl = 'https://shestirukiy.github.io/horosho-v-lesu/HoroshoVLesu-Artem.apk';
       if (currentUserMode === 'Ирина') {
         apkUrl = 'https://shestirukiy.github.io/horosho-v-lesu/HoroshoVLesu-Irina.apk';
@@ -673,7 +673,7 @@ function setupVersionDisplay() {
         window.location.href = apkUrl;
       }, 500);
     } else {
-      showToast(`Запущено в браузере (Web v1.3)`, 2500);
+      showToast(`Запущено в браузере (Web v1.5)`, 2500);
     }
   };
 
