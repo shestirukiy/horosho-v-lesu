@@ -18,8 +18,8 @@
 
         <ImageView
             android:id="@+id/widget_partner_avatar"
-            android:layout_width="52dp"
-            android:layout_height="52dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:src="@drawable/avatar_irina"
             android:scaleType="centerCrop"
             android:contentDescription="Аватар партнера" />
@@ -38,16 +38,8 @@
                 android:layout_height="wrap_content"
                 android:text="ИРИНА"
                 android:textColor="#FFFFFF"
-                android:textSize="15sp"
+                android:textSize="16sp"
                 android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/widget_status_text"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Настроение: ..."
-                android:textColor="#8B9990"
-                android:textSize="11sp" />
         </LinearLayout>
 
         <TextView
@@ -59,14 +51,14 @@
             android:padding="6dp" />
     </LinearLayout>
 
-    <!-- Bottom Row: 3 Life Spheres (Секс, Общение, Быт) -->
+    <!-- Bottom Row: 3 Life Spheres (Icons, Values, Direction Arrows) -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center">
 
-        <!-- Секс -->
+        <!-- Секс Column -->
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -93,15 +85,16 @@
                 android:textSize="16sp"
                 android:textStyle="bold" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Секс"
-                android:textColor="#8B9990"
-                android:textSize="10sp" />
+            <ImageView
+                android:id="@+id/widget_dir_sex"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:src="@drawable/dir_equal"
+                android:layout_marginTop="2dp"
+                android:contentDescription="Динамика Секс" />
         </LinearLayout>
 
-        <!-- Общение -->
+        <!-- Общение Column -->
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -129,15 +122,16 @@
                 android:textSize="16sp"
                 android:textStyle="bold" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Общение"
-                android:textColor="#8B9990"
-                android:textSize="10sp" />
+            <ImageView
+                android:id="@+id/widget_dir_comm"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:src="@drawable/dir_equal"
+                android:layout_marginTop="2dp"
+                android:contentDescription="Динамика Общение" />
         </LinearLayout>
 
-        <!-- Быт -->
+        <!-- Быт Column -->
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -164,12 +158,13 @@
                 android:textSize="16sp"
                 android:textStyle="bold" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Быт"
-                android:textColor="#8B9990"
-                android:textSize="10sp" />
+            <ImageView
+                android:id="@+id/widget_dir_dom"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:src="@drawable/dir_equal"
+                android:layout_marginTop="2dp"
+                android:contentDescription="Динамика Быт" />
         </LinearLayout>
     </LinearLayout>
 

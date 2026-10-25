@@ -33,6 +33,17 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
+      - name: Ensure Persistent Keystore
+        run: |
+          if [ ! -f "android/app/debug.keystore" ]; then
+            keytool -genkey -v -keystore android/app/debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add android/app/debug.keystore
+            git commit -m "Add permanent debug keystore for seamless updates [skip ci]" || true
+            git push origin main || true
+          fi
+
       - name: Sync Capacitor
         run: npx cap sync android
 
@@ -68,16 +79,17 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/main'
         with:
           tag_name: latest
-          name: "Horosho V Lesu (Android APKs)"
+          name: "Horosho V Lesu (Android APKs v1.4)"
           body: |
-            ### 📱 Хорошо в Лесу v1.1 (с Виджетом рабочего стола!):
+            ### 📱 Хорошо в Лесу v1.4:
             * 👩 **Для Артёма**: [HoroshoVLesu-Artem.apk](https://github.com/shestirukiy/horosho-v-lesu/releases/download/latest/HoroshoVLesu-Artem.apk) (ярлык на рабочем столе с фото Ирины + виджет статуса Ирины)
             * 👨 **Для Ирины**: [HoroshoVLesu-Irina.apk](https://github.com/shestirukiy/horosho-v-lesu/releases/download/latest/HoroshoVLesu-Irina.apk) (ярлык на рабочем столе с фото Артёма + виджет статуса Артёма)
             * 🌲 **Универсальный**: [HoroshoVLesu.apk](https://github.com/shestirukiy/horosho-v-lesu/releases/download/latest/HoroshoVLesu.apk)
 
-            **Новинка: Нативный виджет на рабочий стол Android!**
-            * Нажмите пальцем на пустом месте рабочего стола -> «Виджеты» -> найдите «Хорошо в Лесу».
-            * Виджет показывает аватарку партнера и 3 сферы жизни (Секс ❤️, Общение 💬, Быт 🏠) с актуальными цифрами. При клике сразу открывает приложение!
+            **Обновления в v1.4:**
+            * В виджете убраны слова «Секс, Общение, Быт» — вместо них отображаются значки динамики (стрелки вверх/вниз или прочерк).
+            * Убран индикатор настроения из виджета и приложения.
+            * Постоянная цифровая подпись для бесшовных обновлений в будущем.
           files: |
             HoroshoVLesu-Artem.apk
             HoroshoVLesu-Irina.apk

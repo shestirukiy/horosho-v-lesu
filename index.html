@@ -134,6 +134,13 @@
         align-items: center;
       }
 
+      .partner-title {
+        font-size: 19px;
+        font-weight: 800;
+        letter-spacing: 0.5px;
+        color: #ffffff;
+      }
+
       .partner-btn {
         border: none;
         color: #fff;
@@ -751,17 +758,9 @@
       <!-- 1. ИРИНА CARD -->
       <section class="partner-card" id="card-irina">
         <div class="card-header">
-          <div>
-            <div style="display:flex; align-items:center; gap:8px;">
-              <button class="partner-btn" id="btn-color-irina" style="background: #f1c40f;">
-                <span class="color-dot"></span>
-                <span id="label-name-irina">ИРИНА</span>
-              </button>
-              <span class="role-tag-badge" id="role-tag-irina"></span>
-            </div>
-            <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px; padding-left: 4px;">
-              Цвет: <span id="text-color-irina">Yellow</span>
-            </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <div class="partner-title" id="label-name-irina">ИРИНА</div>
+            <span class="role-tag-badge" id="role-tag-irina"></span>
           </div>
           <div class="avatar-thumb-box" id="avatar-box-irina" title="Нажмите 10 раз для входа как Ирина">
             <img src="./Слой-3.png" alt="Ирина" class="avatar-thumb-img" id="avatar-img-irina" />
@@ -820,17 +819,9 @@
       <!-- 2. АРТЁМ CARD -->
       <section class="partner-card" id="card-artem">
         <div class="card-header">
-          <div>
-            <div style="display:flex; align-items:center; gap:8px;">
-              <button class="partner-btn" id="btn-color-artem" style="background: #f1c40f;">
-                <span class="color-dot"></span>
-                <span id="label-name-artem">АРТЁМ</span>
-              </button>
-              <span class="role-tag-badge" id="role-tag-artem"></span>
-            </div>
-            <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px; padding-left: 4px;">
-              Цвет: <span id="text-color-artem">Yellow</span>
-            </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <div class="partner-title" id="label-name-artem">АРТЁМ</div>
+            <span class="role-tag-badge" id="role-tag-artem"></span>
           </div>
           <div class="avatar-thumb-box" id="avatar-box-artem" title="Нажмите 10 раз для входа как Артём">
             <img src="./Слой-2.png" alt="Артём" class="avatar-thumb-img" id="avatar-img-artem" />
@@ -911,21 +902,6 @@
         </div>
       </footer>
 
-      <!-- 4. ColoursWidget Popup -->
-      <div class="color-palette-pop" id="colours-widget">
-        <div class="color-modal-box">
-          <div style="font-weight: 700; font-size: 16px;">Выберите цвет настроения:</div>
-          <div class="color-buttons-grid">
-            <button class="color-choice-btn" data-color="Green" style="background: #2ecc71;">Зелёный</button>
-            <button class="color-choice-btn" data-color="Yellow" style="background: #f1c40f;">Жёлтый</button>
-            <button class="color-choice-btn" data-color="Orange" style="background: #e67e22;">Оранжевый</button>
-            <button class="color-choice-btn" data-color="Red" style="background: #e74c3c;">Красный</button>
-            <button class="color-choice-btn" data-color="Blue" style="background: #3498db;">Синий</button>
-            <button class="color-choice-btn" data-color="Purple" style="background: #9b59b6;">Фиолет</button>
-          </div>
-          <button class="btn-danger" id="btn-close-palette" style="width: 100%;">Закрыть</button>
-        </div>
-      </div>
 
       <!-- 5. CommentWidget Popup -->
       <div class="comment-widget-pop" id="comment-widget">

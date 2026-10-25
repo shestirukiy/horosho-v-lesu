@@ -19,16 +19,6 @@ const CATEGORY_ID: Record<Category, string> = {
   'Быт': 'dom',
 };
 
-// Colors definition from Unreal ColorsTable
-const COLOR_HEX: Record<string, string> = {
-  'Green': '#2ecc71',
-  'Yellow': '#f1c40f',
-  'Orange': '#e67e22',
-  'Red': '#e74c3c',
-  'Blue': '#3498db',
-  'Purple': '#9b59b6',
-};
-
 // Word conversion from Unreal StatesTable
 function getStateWord(val: number): { text: string; cssClass: string } {
   if (val >= 9) return { text: 'Отлично', cssClass: 'status-great' };
@@ -48,7 +38,6 @@ function getDirIcon(val: string): string {
 
 // App State
 let cachedStats: CoupleStats | null = null;
-let activePalettePartner: Partner | null = null;
 let activeCommentTarget: { partner: Partner; category: Category } | null = null;
 
 // User Mode (Role locking: Artyom / Irina / none)
@@ -75,10 +64,6 @@ const btnUserLogout = document.getElementById('btn-user-logout') as HTMLButtonEl
 const toastNotification = document.getElementById('toast-notification') as HTMLDivElement;
 const appFavicon = document.getElementById('app-favicon') as HTMLLinkElement;
 const appTouchIcon = document.getElementById('app-touch-icon') as HTMLLinkElement;
-
-// Palette Modal Elements
-const coloursWidget = document.getElementById('colours-widget') as HTMLDivElement;
-const btnClosePalette = document.getElementById('btn-close-palette') as HTMLButtonElement;
 
 // Comment Modal Elements
 const commentWidget = document.getElementById('comment-widget') as HTMLDivElement;
@@ -253,15 +238,7 @@ function renderAll() {
   for (const partner of PARTNERS) {
     const pId = PARTNER_ID[partner];
 
-    // 1. Color Button
-    const partnerColor = cachedStats['Цвет']?.[partner] || 'Yellow';
-    const hex = COLOR_HEX[partnerColor] || '#f1c40f';
-    const colorBtn = document.getElementById(`btn-color-${pId}`);
-    const colorText = document.getElementById(`text-color-${pId}`);
-    if (colorBtn) colorBtn.style.backgroundColor = hex;
-    if (colorText) colorText.textContent = partnerColor;
-
-    // 2. Categories
+    // Categories
     for (const cat of CATEGORIES) {
       const cId = CATEGORY_ID[cat];
 
@@ -395,39 +372,6 @@ async function handleDirectionCycle(partner: Partner, category: Category) {
   }
 }
 
-// ColoursWidget Palette with permission check
-function openColorPalette(partner: Partner) {
-  if (currentUserMode !== 'none' && currentUserMode !== partner) {
-    showToast(`🔒 Вы вошли как ${currentUserMode}. Цвет настроения ${partner} только для чтения!`);
-    return;
-  }
-  activePalettePartner = partner;
-  coloursWidget.classList.add('open');
-}
-
-function closeColorPalette() {
-  activePalettePartner = null;
-  coloursWidget.classList.remove('open');
-}
-
-async function selectColor(colorName: string) {
-  if (!activePalettePartner || !cachedStats) return;
-
-  const partner = activePalettePartner;
-  (cachedStats['Цвет'] as any)[partner] = colorName;
-
-  closeColorPalette();
-  renderAll();
-
-  setSyncState(`Цвет ${partner} изменён...`, 'syncing');
-  try {
-    await updateStat('Цвет', partner, colorName);
-    setSyncState('Синхронизировано');
-  } catch (err) {
-    console.error(err);
-    setSyncState('Ошибка сохранения', 'error');
-  }
-}
 
 // CommentWidget Note Editing (View-only if spouse)
 function openCommentModal(partner: Partner, category: Category) {
@@ -596,23 +540,6 @@ function initListeners() {
   bindFastTap('avatar-box-irina', 'Ирина');
   bindFastTap('avatar-box-artem', 'Артем');
 
-  // Palette triggers
-  document.getElementById('btn-color-irina')?.addEventListener('click', () => openColorPalette('Ирина'));
-  document.getElementById('btn-color-artem')?.addEventListener('click', () => openColorPalette('Артем'));
-  btnClosePalette.addEventListener('click', closeColorPalette);
-
-  // Close palette on backdrop click
-  coloursWidget.addEventListener('click', (e) => {
-    if (e.target === coloursWidget) closeColorPalette();
-  });
-
-  // Palette buttons
-  document.querySelectorAll<HTMLButtonElement>('.color-choice-btn').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const color = btn.dataset.color || 'Yellow';
-      selectColor(color);
-    });
-  });
 
   // Comment modal actions
   btnCommentClear.addEventListener('click', () => {

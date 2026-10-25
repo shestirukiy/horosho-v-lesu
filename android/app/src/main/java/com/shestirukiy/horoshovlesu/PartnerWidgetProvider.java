@@ -80,11 +80,12 @@ public class PartnerWidgetProvider extends AppWidgetProvider {
         int sexVal = prefs.getInt("stat_sex_" + partner, 5);
         int commVal = prefs.getInt("stat_comm_" + partner, 8);
         int domVal = prefs.getInt("stat_dom_" + partner, 7);
-        String color = prefs.getString("stat_color_" + partner, "Yellow");
+        String sexDir = prefs.getString("stat_dir_sex_" + partner, "(=)");
+        String commDir = prefs.getString("stat_dir_comm_" + partner, "(=)");
+        String domDir = prefs.getString("stat_dir_dom_" + partner, "(=)");
 
         // Set Partner Info
         views.setTextViewText(R.id.widget_partner_name, partner.toUpperCase());
-        views.setTextViewText(R.id.widget_status_text, "Настроение: " + translateColor(color));
 
         if ("Артем".equals(partner)) {
             views.setImageViewResource(R.id.widget_partner_avatar, R.drawable.avatar_artem);
@@ -96,6 +97,11 @@ public class PartnerWidgetProvider extends AppWidgetProvider {
         views.setTextViewText(R.id.widget_val_sex, String.valueOf(sexVal));
         views.setTextViewText(R.id.widget_val_comm, String.valueOf(commVal));
         views.setTextViewText(R.id.widget_val_dom, String.valueOf(domVal));
+
+        // Set Direction Icons
+        views.setImageViewResource(R.id.widget_dir_sex, getDirDrawable(sexDir));
+        views.setImageViewResource(R.id.widget_dir_comm, getDirDrawable(commDir));
+        views.setImageViewResource(R.id.widget_dir_dom, getDirDrawable(domDir));
 
         // Click on widget root opens MainActivity (the app!)
         Intent openAppIntent = new Intent(context, MainActivity.class);
@@ -136,8 +142,14 @@ public class PartnerWidgetProvider extends AppWidgetProvider {
                     if (json.has("Быт")) {
                         editor.putInt("stat_dom_" + p, json.getJSONObject("Быт").optInt(p, 7));
                     }
-                    if (json.has("Цвет")) {
-                        editor.putString("stat_color_" + p, json.getJSONObject("Цвет").optString(p, "Yellow"));
+                    if (json.has("Секс динамика")) {
+                        editor.putString("stat_dir_sex_" + p, json.getJSONObject("Секс динамика").optString(p, "(=)"));
+                    }
+                    if (json.has("Общение динамика")) {
+                        editor.putString("stat_dir_comm_" + p, json.getJSONObject("Общение динамика").optString(p, "(=)"));
+                    }
+                    if (json.has("Быт динамика")) {
+                        editor.putString("stat_dir_dom_" + p, json.getJSONObject("Быт динамика").optString(p, "(=)"));
                     }
                 }
                 editor.apply();
@@ -153,6 +165,14 @@ public class PartnerWidgetProvider extends AppWidgetProvider {
                 e.printStackTrace();
             }
         });
+    }
+
+    private static int getDirDrawable(String dir) {
+        if (dir != null) {
+            if (dir.contains("+")) return R.drawable.dir_plus;
+            if (dir.contains("-")) return R.drawable.dir_minus;
+        }
+        return R.drawable.dir_equal;
     }
 
     private static String fetchUrlWithRedirects(String urlString) throws Exception {
@@ -180,15 +200,5 @@ public class PartnerWidgetProvider extends AppWidgetProvider {
         }
         reader.close();
         return sb.toString();
-    }
-
-    private static String translateColor(String c) {
-        if ("Green".equalsIgnoreCase(c)) return "Отличное 🟢";
-        if ("Yellow".equalsIgnoreCase(c)) return "Нормальное 🟡";
-        if ("Orange".equalsIgnoreCase(c)) return "Так себе 🟠";
-        if ("Red".equalsIgnoreCase(c)) return "Плохое 🔴";
-        if ("Blue".equalsIgnoreCase(c)) return "Грустное 🔵";
-        if ("Purple".equalsIgnoreCase(c)) return "Задумчивое 🟣";
-        return c;
     }
 }
