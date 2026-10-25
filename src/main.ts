@@ -488,8 +488,9 @@ function initWindowControls() {
   btnUpdateApp.addEventListener('click', () => {
     const isCapacitor = !!(window as any).Capacitor;
     const bridgeVer = (window as any).AndroidNativeBridge?.getApkVersion?.() || (window as any).__NATIVE_APK_VERSION__;
+    const isLatestApk = bridgeVer && (bridgeVer.includes('1.5') || bridgeVer.includes('сборка 7'));
 
-    if (isCapacitor && !bridgeVer) {
+    if (isCapacitor && !isLatestApk) {
       showToast('📥 Скачивание единого обновления APK v1.5...', 4000);
       const apkUrl = 'https://shestirukiy.github.io/horosho-v-lesu/HoroshoVLesu.apk';
       setTimeout(() => {
@@ -603,16 +604,31 @@ function setupVersionDisplay() {
 
   function updateBadges(apkVer: string | null) {
     if (apkVer) {
-      const text = `APK ${apkVer}`;
-      if (headerBadge) {
-        headerBadge.textContent = text;
-        headerBadge.style.color = '#2ecc71';
-        headerBadge.title = `Установлен нативный APK ${apkVer} (виджет поддерживается)`;
-      }
-      if (footerBadge) {
-        footerBadge.textContent = `${text} • Web v1.5`;
-        footerBadge.style.color = '#2ecc71';
-        footerBadge.style.opacity = '0.9';
+      const isLatest = apkVer.includes('1.5') || apkVer.includes('сборка 7');
+      if (isLatest) {
+        const text = `APK ${apkVer}`;
+        if (headerBadge) {
+          headerBadge.textContent = text;
+          headerBadge.style.color = '#2ecc71';
+          headerBadge.title = `Установлен актуальный APK ${apkVer} с RPG HUD виджетом`;
+        }
+        if (footerBadge) {
+          footerBadge.textContent = `${text} • Web v1.5`;
+          footerBadge.style.color = '#2ecc71';
+          footerBadge.style.opacity = '0.9';
+        }
+      } else {
+        const text = `⚠️ Доступен v1.5 (нажмите обновить)`;
+        if (headerBadge) {
+          headerBadge.textContent = text;
+          headerBadge.style.color = '#e67e22';
+          headerBadge.title = `У вас ${apkVer}. Нажмите, чтобы обновиться до v1.5 с RPG HUD виджетом!`;
+        }
+        if (footerBadge) {
+          footerBadge.textContent = `У вас ${apkVer} ➔ Доступен v1.5`;
+          footerBadge.style.color = '#e67e22';
+          footerBadge.style.opacity = '0.9';
+        }
       }
     } else {
       const isCapacitor = !!(window as any).Capacitor;
@@ -656,16 +672,16 @@ function setupVersionDisplay() {
   // Click on badge shows details toast / download offer
   const showVersionInfo = () => {
     const cur = (window as any).AndroidNativeBridge?.getApkVersion?.() || (window as any).__NATIVE_APK_VERSION__;
-    if (cur) {
-      showToast(`Установлен актуальный APK: ${cur}. Поддержка нативного виджета активна!`, 3500);
-    } else if ((window as any).Capacitor) {
+    const isLatest = cur && (cur.includes('1.5') || cur.includes('сборка 7'));
+
+    if (cur && isLatest) {
+      showToast(`Установлен актуальный APK: ${cur}. RPG виджет активен!`, 3500);
+    } else {
       showToast('📥 Скачивание единого обновления APK v1.5...', 4000);
       const apkUrl = 'https://shestirukiy.github.io/horosho-v-lesu/HoroshoVLesu.apk';
       setTimeout(() => {
         window.location.href = apkUrl;
       }, 500);
-    } else {
-      showToast(`Запущено в браузере (Web v1.5)`, 2500);
     }
   };
 
