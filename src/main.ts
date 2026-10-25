@@ -544,19 +544,17 @@ function initWindowControls() {
     const bridgeVer = (window as any).AndroidNativeBridge?.getApkVersion?.() || (window as any).__NATIVE_APK_VERSION__;
 
     if (isCapacitor && !bridgeVer) {
-      const confirmDownload = confirm(
-        '⚠️ На телефоне установлен старый APK без поддержки виджетов.\n\nСкачать и установить обновленный APK v1.3.1?'
-      );
-      if (confirmDownload) {
-        let apkUrl = 'https://github.com/shestirukiy/horosho-v-lesu/releases/tag/latest';
-        if (currentUserMode === 'Ирина') {
-          apkUrl = 'https://github.com/shestirukiy/horosho-v-lesu/releases/download/latest/HoroshoVLesu-Irina.apk';
-        } else if (currentUserMode === 'Артем') {
-          apkUrl = 'https://github.com/shestirukiy/horosho-v-lesu/releases/download/latest/HoroshoVLesu-Artem.apk';
-        }
-        window.open(apkUrl, '_system');
-        return;
+      showToast('📥 Скачивание обновления APK v1.3.1...', 4000);
+      let apkUrl = 'https://github.com/shestirukiy/horosho-v-lesu/releases/tag/latest';
+      if (currentUserMode === 'Ирина') {
+        apkUrl = 'https://github.com/shestirukiy/horosho-v-lesu/releases/download/latest/HoroshoVLesu-Irina.apk';
+      } else if (currentUserMode === 'Артем') {
+        apkUrl = 'https://github.com/shestirukiy/horosho-v-lesu/releases/download/latest/HoroshoVLesu-Artem.apk';
       }
+      setTimeout(() => {
+        window.location.href = apkUrl;
+      }, 500);
+      return;
     }
 
     setSyncState('Обновление интерфейса...', 'syncing');
@@ -737,18 +735,16 @@ function setupVersionDisplay() {
     if (cur) {
       showToast(`Установлен актуальный APK: ${cur}. Поддержка нативного виджета активна!`, 3500);
     } else if ((window as any).Capacitor) {
-      const confirmDownload = confirm(
-        '⚠️ На телефоне установлен старый APK без виджета.\n\nСкачать и установить обновленный APK v1.3.1?'
-      );
-      if (confirmDownload) {
-        let apkUrl = 'https://github.com/shestirukiy/horosho-v-lesu/releases/tag/latest';
-        if (currentUserMode === 'Ирина') {
-          apkUrl = 'https://github.com/shestirukiy/horosho-v-lesu/releases/download/latest/HoroshoVLesu-Irina.apk';
-        } else if (currentUserMode === 'Артем') {
-          apkUrl = 'https://github.com/shestirukiy/horosho-v-lesu/releases/download/latest/HoroshoVLesu-Artem.apk';
-        }
-        window.open(apkUrl, '_system');
+      showToast('📥 Скачивание обновления APK v1.3.1...', 4000);
+      let apkUrl = 'https://github.com/shestirukiy/horosho-v-lesu/releases/tag/latest';
+      if (currentUserMode === 'Ирина') {
+        apkUrl = 'https://github.com/shestirukiy/horosho-v-lesu/releases/download/latest/HoroshoVLesu-Irina.apk';
+      } else if (currentUserMode === 'Артем') {
+        apkUrl = 'https://github.com/shestirukiy/horosho-v-lesu/releases/download/latest/HoroshoVLesu-Artem.apk';
       }
+      setTimeout(() => {
+        window.location.href = apkUrl;
+      }, 500);
     } else {
       showToast(`Запущено в браузере (Web v1.3)`, 2500);
     }
