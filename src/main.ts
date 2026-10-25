@@ -651,6 +651,81 @@ function initListeners() {
 
   // Initial apply of saved user mode
   applyUserModeUI();
+
+  // Initialize version display
+  setupVersionDisplay();
+}
+
+function setupVersionDisplay() {
+  const headerBadge = document.getElementById('header-version-badge');
+  const footerBadge = document.getElementById('app-version-badge');
+
+  function updateBadges(apkVer: string | null) {
+    if (apkVer) {
+      const text = `APK ${apkVer}`;
+      if (headerBadge) {
+        headerBadge.textContent = text;
+        headerBadge.style.color = '#2ecc71';
+        headerBadge.title = `Установлен нативный APK ${apkVer} (виджет поддерживается)`;
+      }
+      if (footerBadge) {
+        footerBadge.textContent = `${text} • Web v1.3`;
+        footerBadge.style.color = '#2ecc71';
+        footerBadge.style.opacity = '0.9';
+      }
+    } else {
+      const isCapacitor = !!(window as any).Capacitor;
+      if (isCapacitor) {
+        const text = `⚠️ Старый APK (обновите!)`;
+        if (headerBadge) {
+          headerBadge.textContent = text;
+          headerBadge.style.color = '#e67e22';
+          headerBadge.title = 'Обновите APK до v1.3 в релизах, чтобы появился виджет';
+        }
+        if (footerBadge) {
+          footerBadge.textContent = `${text} • Web v1.3`;
+          footerBadge.style.color = '#e67e22';
+        }
+      } else {
+        const text = `Web v1.3`;
+        if (headerBadge) headerBadge.textContent = text;
+        if (footerBadge) footerBadge.textContent = text;
+      }
+    }
+  }
+
+  // 1. Synchronous check via AndroidNativeBridge
+  const bridgeVer = (window as any).AndroidNativeBridge?.getApkVersion?.();
+  if (bridgeVer) {
+    updateBadges(bridgeVer);
+  } else if ((window as any).__NATIVE_APK_VERSION__) {
+    updateBadges((window as any).__NATIVE_APK_VERSION__);
+  } else {
+    setTimeout(() => {
+      const lateVer = (window as any).AndroidNativeBridge?.getApkVersion?.() || (window as any).__NATIVE_APK_VERSION__;
+      updateBadges(lateVer || null);
+    }, 600);
+  }
+
+  // 2. Callback from native evaluateJavascript
+  (window as any).__onNativeVersion = (ver: string) => {
+    updateBadges(ver);
+  };
+
+  // Click on badge shows details toast
+  const showVersionInfo = () => {
+    const cur = (window as any).AndroidNativeBridge?.getApkVersion?.() || (window as any).__NATIVE_APK_VERSION__;
+    if (cur) {
+      showToast(`Установлен актуальный APK: ${cur}. Поддержка нативного виджета активна!`, 3500);
+    } else if ((window as any).Capacitor) {
+      showToast(`Внимание: используется старый APK без виджета. Пожалуйста, обновите APK до v1.3!`, 4000);
+    } else {
+      showToast(`Запущено в браузере (Web v1.3)`, 2500);
+    }
+  };
+
+  headerBadge?.addEventListener('click', showVersionInfo);
+  footerBadge?.addEventListener('click', showVersionInfo);
 }
 
 // Register Service Worker for seamless background auto-updates
