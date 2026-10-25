@@ -491,11 +491,15 @@ function initWindowControls() {
     const isLatestApk = bridgeVer && (bridgeVer.includes('1.5') || bridgeVer.includes('сборка 7'));
 
     if (isCapacitor && !isLatestApk) {
-      showToast('📥 Скачивание единого обновления APK v1.5...', 4000);
-      const apkUrl = 'https://shestirukiy.github.io/horosho-v-lesu/HoroshoVLesu.apk';
-      setTimeout(() => {
-        window.location.href = apkUrl;
-      }, 500);
+      showToast('🌐 Открываем страницу загрузки в браузере...', 3500);
+      const downloadPageUrl = 'https://shestirukiy.github.io/horosho-v-lesu/download.html';
+      
+      const nativeBridge = (window as any).AndroidNativeBridge;
+      if (nativeBridge?.openExternalUrl) {
+        nativeBridge.openExternalUrl(downloadPageUrl);
+      } else {
+        window.open(downloadPageUrl, '_system');
+      }
       return;
     }
 
@@ -506,19 +510,28 @@ function initWindowControls() {
     }, 300);
   });
 
+  const openExternal = (url: string) => {
+    const bridge = (window as any).AndroidNativeBridge;
+    if (bridge?.openExternalUrl) {
+      bridge.openExternalUrl(url);
+    } else {
+      window.open(url, '_system');
+    }
+  };
+
   // Direct Download buttons (open via system browser to avoid in-app webview freeze)
   document.getElementById('btn-download-apk')?.addEventListener('click', (e) => {
     e.preventDefault();
-    const url = 'https://shestirukiy.github.io/horosho-v-lesu/HoroshoVLesu.apk';
-    showToast('📲 Открытие загрузчика APK...', 2500);
-    window.open(url, '_system');
+    const url = 'https://shestirukiy.github.io/horosho-v-lesu/download.html';
+    showToast('📲 Открытие страницы загрузки...', 2500);
+    openExternal(url);
   });
 
   document.getElementById('btn-download-zip')?.addEventListener('click', (e) => {
     e.preventDefault();
     const url = 'https://shestirukiy.github.io/horosho-v-lesu/HoroshoVLesu.zip';
     showToast('📦 Открытие загрузчика ZIP...', 2500);
-    window.open(url, '_system');
+    openExternal(url);
   });
 }
 

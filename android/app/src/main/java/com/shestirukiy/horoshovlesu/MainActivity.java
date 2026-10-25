@@ -41,6 +41,20 @@ public class MainActivity extends BridgeActivity {
                             e.printStackTrace();
                         }
                     }
+
+                    @JavascriptInterface
+                    public void openExternalUrl(String url) {
+                        try {
+                            android.content.Intent intent = new android.content.Intent(
+                                android.content.Intent.ACTION_VIEW,
+                                android.net.Uri.parse(url)
+                            );
+                            intent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK);
+                            startActivity(intent);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
                 }, "AndroidNativeBridge");
             }
         } catch (Exception e) {
