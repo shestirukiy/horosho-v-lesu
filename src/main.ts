@@ -39,11 +39,12 @@ function getStateWord(val: number): { text: string; cssClass: string } {
 
 // Directions cycling
 const DIRECTIONS = ['(=)', '(+)', '(-)'] as const;
-const DIR_ICONS: Record<string, string> = {
-  '(+)': '/dir_plus.png',
-  '(-)': '/dir_minus.png',
-  '(=)': '/dir_equal.png',
-};
+function getDirIcon(val: string): string {
+  const clean = (val || '').trim();
+  if (clean.includes('+')) return './dir_plus.png';
+  if (clean.includes('-')) return './dir_minus.png';
+  return './dir_equal.png';
+}
 
 // App State
 let cachedStats: CoupleStats | null = null;
@@ -290,7 +291,7 @@ function renderAll() {
       const currentDir = (cachedStats[dirKey] as any)?.[partner] || '(=)';
       const dirImg = document.getElementById(`dir-img-${pId}-${cId}`) as HTMLImageElement;
       if (dirImg) {
-        dirImg.src = DIR_ICONS[currentDir] || '/dir_equal.png';
+        dirImg.src = getDirIcon(currentDir);
       }
 
       // Note Button
@@ -388,7 +389,7 @@ async function handleDirectionCycle(partner: Partner, category: Category) {
 
   (cachedStats[dirKey] as any)[partner] = nextDir;
   const dirImg = document.getElementById(`dir-img-${pId}-${cId}`) as HTMLImageElement;
-  if (dirImg) dirImg.src = DIR_ICONS[nextDir] || '/dir_equal.png';
+  if (dirImg) dirImg.src = getDirIcon(nextDir);
 
   setSyncState('Обновление динамики...', 'syncing');
   try {
