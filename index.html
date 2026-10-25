@@ -7,7 +7,8 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <link rel="manifest" href="./manifest.webmanifest" />
-    <link rel="icon" type="image/png" href="./Heart.png" />
+    <link rel="icon" id="app-favicon" type="image/png" href="./Heart.png" />
+    <link rel="apple-touch-icon" id="app-touch-icon" href="./Heart.png" />
     <title>Хорошо в Лесу</title>
     <style>
       :root {
@@ -173,6 +174,124 @@
         justify-content: center;
         flex-shrink: 0;
         box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+        cursor: pointer;
+        transition: transform 0.12s ease, border-color 0.2s, box-shadow 0.2s;
+        position: relative;
+      }
+
+      .avatar-thumb-box:active {
+        transform: scale(0.92);
+        border-color: #2ecc71;
+        box-shadow: 0 0 12px rgba(46, 204, 113, 0.6);
+      }
+
+      /* Role lock badges */
+      .user-logged-badge {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(46, 204, 113, 0.15);
+        border: 1px solid rgba(46, 204, 113, 0.4);
+        color: #2ecc71;
+        padding: 3px 8px;
+        border-radius: 8px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.3px;
+      }
+
+      .user-logout-btn {
+        background: rgba(255, 255, 255, 0.15);
+        border: none;
+        color: #fff;
+        border-radius: 5px;
+        padding: 1px 6px;
+        font-size: 10px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: background 0.15s;
+      }
+
+      .user-logout-btn:active {
+        background: #e74c3c;
+      }
+
+      .role-tag-badge {
+        font-size: 10px;
+        font-weight: 700;
+        padding: 2px 7px;
+        border-radius: 6px;
+        display: none;
+        letter-spacing: 0.4px;
+      }
+
+      .role-tag-badge.active-role {
+        display: inline-block;
+        background: rgba(46, 204, 113, 0.2);
+        color: #2ecc71;
+        border: 1px solid rgba(46, 204, 113, 0.35);
+      }
+
+      .role-tag-badge.readonly-role {
+        display: inline-block;
+        background: rgba(231, 76, 60, 0.15);
+        color: #e74c3c;
+        border: 1px solid rgba(231, 76, 60, 0.3);
+      }
+
+      /* Card states when role is locked */
+      .partner-card.is-active-user {
+        border-color: rgba(46, 204, 113, 0.4);
+        box-shadow: 0 4px 22px rgba(46, 204, 113, 0.12);
+      }
+
+      .partner-card.is-readonly {
+        opacity: 0.88;
+        border-color: rgba(255, 255, 255, 0.05);
+      }
+
+      .partner-card.is-readonly .stat-slider {
+        pointer-events: none;
+        opacity: 0.6;
+      }
+
+      .partner-card.is-readonly .stat-slider::-webkit-slider-thumb {
+        background: #7f8c8d;
+        border-color: #bdc3c7;
+        box-shadow: none;
+      }
+
+      .partner-card.is-readonly .direction-btn {
+        pointer-events: none;
+        opacity: 0.55;
+        cursor: default;
+      }
+
+      .partner-card.is-readonly .partner-btn {
+        cursor: default;
+      }
+
+      /* In-app Toast */
+      #toast-notification {
+        position: fixed;
+        top: 60px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(20, 26, 22, 0.95);
+        border: 1px solid #2ecc71;
+        color: #fff;
+        padding: 8px 18px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.7);
+        z-index: 1000;
+        display: none;
+        align-items: center;
+        gap: 8px;
+        pointer-events: none;
+        max-width: 90%;
+        text-align: center;
       }
 
       .avatar-thumb-img {
@@ -600,6 +719,11 @@
           <span>🌲</span>
           <span>Хорошо в Лесу</span>
         </div>
+        <div id="user-mode-badge" style="display:none;" class="user-logged-badge">
+          <img id="badge-spouse-img" src="./icon-irina-192.png" style="width:18px;height:18px;border-radius:50%;object-fit:cover;" />
+          <span id="badge-user-name">Вы: Артём</span>
+          <button id="btn-user-logout" class="user-logout-btn" title="Выйти из аккаунта">✕</button>
+        </div>
         <div class="window-controls-group">
           <button id="btn-pwa-install" style="display:none; background:#2ecc71; color:#fff; border:none; padding:5px 10px; border-radius:8px; font-weight:700; font-size:12px; cursor:pointer; align-items:center; gap:4px;">
             <span>📲</span>
@@ -620,15 +744,18 @@
       <section class="partner-card" id="card-irina">
         <div class="card-header">
           <div>
-            <button class="partner-btn" id="btn-color-irina" style="background: #f1c40f;">
-              <span class="color-dot"></span>
-              <span id="label-name-irina">ИРИНА</span>
-            </button>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <button class="partner-btn" id="btn-color-irina" style="background: #f1c40f;">
+                <span class="color-dot"></span>
+                <span id="label-name-irina">ИРИНА</span>
+              </button>
+              <span class="role-tag-badge" id="role-tag-irina"></span>
+            </div>
             <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px; padding-left: 4px;">
               Цвет: <span id="text-color-irina">Yellow</span>
             </div>
           </div>
-          <div class="avatar-thumb-box">
+          <div class="avatar-thumb-box" id="avatar-box-irina" title="Нажмите 10 раз для входа как Ирина">
             <img src="/Слой-3.png" alt="Ирина" class="avatar-thumb-img" id="avatar-img-irina" />
           </div>
         </div>
@@ -686,15 +813,18 @@
       <section class="partner-card" id="card-artem">
         <div class="card-header">
           <div>
-            <button class="partner-btn" id="btn-color-artem" style="background: #f1c40f;">
-              <span class="color-dot"></span>
-              <span id="label-name-artem">АРТЁМ</span>
-            </button>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <button class="partner-btn" id="btn-color-artem" style="background: #f1c40f;">
+                <span class="color-dot"></span>
+                <span id="label-name-artem">АРТЁМ</span>
+              </button>
+              <span class="role-tag-badge" id="role-tag-artem"></span>
+            </div>
             <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px; padding-left: 4px;">
               Цвет: <span id="text-color-artem">Yellow</span>
             </div>
           </div>
-          <div class="avatar-thumb-box">
+          <div class="avatar-thumb-box" id="avatar-box-artem" title="Нажмите 10 раз для входа как Артём">
             <img src="/Слой-2.png" alt="Артём" class="avatar-thumb-img" id="avatar-img-artem" />
           </div>
         </div>
@@ -796,11 +926,15 @@
           <textarea class="comment-textarea" id="comment-input" placeholder="Введите пожелание или заметку..."></textarea>
           <div class="comment-actions">
             <button class="btn-danger" id="btn-comment-clear">Очистить</button>
-            <button class="btn-primary" id="btn-comment-enter">Enter (Сохранить)</button>
+            <button class="btn-danger" id="btn-comment-close" style="background:rgba(255,255,255,0.12); color:#fff; border-color:rgba(255,255,255,0.25);">Закрыть</button>
+            <button class="btn-primary" id="btn-comment-enter">Сохранить</button>
           </div>
         </div>
       </div>
     </div>
+
+    <!-- Toast Notification -->
+    <div id="toast-notification"></div>
 
     <script type="module" src="/src/main.ts"></script>
   </body>

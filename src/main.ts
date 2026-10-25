@@ -3,6 +3,7 @@ import { fetchStats, updateStat, CoupleStats } from './api';
 // Partners and Categories
 type Partner = 'Ирина' | 'Артем';
 type Category = 'Секс' | 'Общение' | 'Быт';
+type UserMode = 'none' | 'Артем' | 'Ирина';
 
 const PARTNERS: Partner[] = ['Ирина', 'Артем'];
 const CATEGORIES: Category[] = ['Секс', 'Общение', 'Быт'];
@@ -49,6 +50,9 @@ let cachedStats: CoupleStats | null = null;
 let activePalettePartner: Partner | null = null;
 let activeCommentTarget: { partner: Partner; category: Category } | null = null;
 
+// User Mode (Role locking: Artyom / Irina / none)
+let currentUserMode: UserMode = (localStorage.getItem('horosho_v_lesu_user_mode') as UserMode) || 'none';
+
 // UI Elements
 const appWindow = document.getElementById('app-window') as HTMLDivElement;
 const minimizedBar = document.getElementById('minimized-bar') as HTMLDivElement;
@@ -62,6 +66,15 @@ const btnMainRefresh = document.getElementById('btn-main-refresh') as HTMLButton
 const refreshIcon = document.getElementById('refresh-icon') as HTMLSpanElement;
 const btnUpdateApp = document.getElementById('btn-update-app') as HTMLButtonElement;
 
+// User Mode Elements
+const userModeBadge = document.getElementById('user-mode-badge') as HTMLDivElement;
+const badgeSpouseImg = document.getElementById('badge-spouse-img') as HTMLImageElement;
+const badgeUserName = document.getElementById('badge-user-name') as HTMLSpanElement;
+const btnUserLogout = document.getElementById('btn-user-logout') as HTMLButtonElement;
+const toastNotification = document.getElementById('toast-notification') as HTMLDivElement;
+const appFavicon = document.getElementById('app-favicon') as HTMLLinkElement;
+const appTouchIcon = document.getElementById('app-touch-icon') as HTMLLinkElement;
+
 // Palette Modal Elements
 const coloursWidget = document.getElementById('colours-widget') as HTMLDivElement;
 const btnClosePalette = document.getElementById('btn-close-palette') as HTMLButtonElement;
@@ -72,6 +85,142 @@ const commentModalTitle = document.getElementById('comment-modal-title') as HTML
 const commentInput = document.getElementById('comment-input') as HTMLTextAreaElement;
 const btnCommentClear = document.getElementById('btn-comment-clear') as HTMLButtonElement;
 const btnCommentEnter = document.getElementById('btn-comment-enter') as HTMLButtonElement;
+const btnCommentClose = document.getElementById('btn-comment-close') as HTMLButtonElement;
+
+// Toast Utility
+let toastTimer: any = null;
+function showToast(message: string, durationMs = 2500) {
+  if (!toastNotification) return;
+  if (toastTimer) clearTimeout(toastTimer);
+  toastNotification.textContent = message;
+  toastNotification.style.display = 'flex';
+  toastTimer = setTimeout(() => {
+    toastNotification.style.display = 'none';
+    toastTimer = null;
+  }, durationMs);
+}
+
+// App Icon switching (Changes to spouse's picture when logged in)
+function updateAppIcon(mode: UserMode) {
+  let iconUrl = './Heart.png';
+  if (mode === 'Артем') {
+    // Logged in as Artem -> icon is spouse Irina
+    iconUrl = './icon-irina-192.png';
+  } else if (mode === 'Ирина') {
+    // Logged in as Irina -> icon is spouse Artem
+    iconUrl = './icon-artem-192.png';
+  }
+
+  if (appFavicon) appFavicon.href = iconUrl;
+  if (appTouchIcon) appTouchIcon.href = iconUrl;
+
+  const links = document.querySelectorAll<HTMLLinkElement>("link[rel*='icon']");
+  links.forEach((l) => (l.href = iconUrl));
+}
+
+// Apply User Mode UI (cards styles, tags, sliders disabled state, spouse icon)
+function applyUserModeUI() {
+  updateAppIcon(currentUserMode);
+
+  if (currentUserMode === 'none') {
+    if (userModeBadge) userModeBadge.style.display = 'none';
+  } else {
+    if (userModeBadge) {
+      userModeBadge.style.display = 'flex';
+      badgeUserName.textContent = `Вы: ${currentUserMode}`;
+      const spouseIcon = currentUserMode === 'Артем' ? './icon-irina-192.png' : './icon-artem-192.png';
+      if (badgeSpouseImg) badgeSpouseImg.src = spouseIcon;
+    }
+  }
+
+  for (const partner of PARTNERS) {
+    const pId = PARTNER_ID[partner];
+    const card = document.getElementById(`card-${pId}`);
+    const roleTag = document.getElementById(`role-tag-${pId}`);
+
+    const isUser = currentUserMode === partner;
+    const isSpouse = currentUserMode !== 'none' && currentUserMode !== partner;
+
+    if (card) {
+      if (isUser) {
+        card.classList.add('is-active-user');
+        card.classList.remove('is-readonly');
+      } else if (isSpouse) {
+        card.classList.remove('is-active-user');
+        card.classList.add('is-readonly');
+      } else {
+        card.classList.remove('is-active-user');
+        card.classList.remove('is-readonly');
+      }
+    }
+
+    if (roleTag) {
+      if (isUser) {
+        roleTag.className = 'role-tag-badge active-role';
+        roleTag.textContent = 'ВЫ';
+      } else if (isSpouse) {
+        roleTag.className = 'role-tag-badge readonly-role';
+        roleTag.textContent = 'ПРОСМОТР';
+      } else {
+        roleTag.className = 'role-tag-badge';
+        roleTag.textContent = '';
+      }
+    }
+
+    // Disable/enable sliders on spouse's card
+    for (const cat of CATEGORIES) {
+      const cId = CATEGORY_ID[cat];
+      const slider = document.getElementById(`slider-${pId}-${cId}`) as HTMLInputElement;
+      if (slider) {
+        slider.disabled = isSpouse;
+      }
+    }
+  }
+}
+
+function setUserMode(mode: UserMode) {
+  currentUserMode = mode;
+  if (mode === 'none') {
+    localStorage.removeItem('horosho_v_lesu_user_mode');
+  } else {
+    localStorage.setItem('horosho_v_lesu_user_mode', mode);
+  }
+  applyUserModeUI();
+}
+
+// 10-tap interaction on partner avatar
+const tapCounters: Record<Partner, { count: number; lastTime: number }> = {
+  'Артем': { count: 0, lastTime: 0 },
+  'Ирина': { count: 0, lastTime: 0 },
+};
+
+function handleAvatarTap(partner: Partner) {
+  const now = Date.now();
+  const tracker = tapCounters[partner];
+
+  if (now - tracker.lastTime > 3000) {
+    tracker.count = 1;
+  } else {
+    tracker.count++;
+  }
+  tracker.lastTime = now;
+
+  if (currentUserMode === partner) {
+    showToast(`Вы уже авторизованы как ${partner} 👤`);
+    return;
+  }
+
+  if (tracker.count >= 3 && tracker.count < 10) {
+    const left = 10 - tracker.count;
+    const word = left === 1 ? 'нажатие' : left < 5 ? 'нажатия' : 'нажатий';
+    showToast(`Вход как ${partner}: ещё ${left} ${word}...`, 900);
+  } else if (tracker.count >= 10) {
+    tracker.count = 0;
+    setUserMode(partner);
+    const spouse = partner === 'Артем' ? 'Ирины' : 'Артёма';
+    showToast(`👤 Вы вошли как ${partner}! Параметры ${spouse} заблокированы от случайных изменений.`, 3500);
+  }
+}
 
 function setSyncState(text: string, state: 'ok' | 'syncing' | 'error' = 'ok') {
   syncStatusMsg.textContent = text;
@@ -141,6 +290,9 @@ function renderAll() {
       }
     }
   }
+
+  // Ensure read-only and slider states are retained after render
+  applyUserModeUI();
 }
 
 // Refresh data from Google Apps Script
@@ -165,9 +317,15 @@ async function refreshData() {
   }
 }
 
-// Handle Slider drag/change
+// Handle Slider drag/change with permission check
 async function handleSliderChange(partner: Partner, category: Category, newVal: number) {
   if (!cachedStats) return;
+
+  if (currentUserMode !== 'none' && currentUserMode !== partner) {
+    showToast(`🔒 Вы вошли как ${currentUserMode}. Параметры ${partner} доступны только для чтения!`);
+    renderAll();
+    return;
+  }
 
   const pId = PARTNER_ID[partner];
   const cId = CATEGORY_ID[category];
@@ -193,9 +351,14 @@ async function handleSliderChange(partner: Partner, category: Category, newVal: 
   }
 }
 
-// Handle Direction Cycle
+// Handle Direction Cycle with permission check
 async function handleDirectionCycle(partner: Partner, category: Category) {
   if (!cachedStats) return;
+
+  if (currentUserMode !== 'none' && currentUserMode !== partner) {
+    showToast(`🔒 Вы вошли как ${currentUserMode}. Динамика ${partner} доступна только для чтения!`);
+    return;
+  }
 
   const pId = PARTNER_ID[partner];
   const cId = CATEGORY_ID[category];
@@ -219,8 +382,12 @@ async function handleDirectionCycle(partner: Partner, category: Category) {
   }
 }
 
-// ColoursWidget Palette
+// ColoursWidget Palette with permission check
 function openColorPalette(partner: Partner) {
+  if (currentUserMode !== 'none' && currentUserMode !== partner) {
+    showToast(`🔒 Вы вошли как ${currentUserMode}. Цвет настроения ${partner} только для чтения!`);
+    return;
+  }
   activePalettePartner = partner;
   coloursWidget.classList.add('open');
 }
@@ -249,7 +416,7 @@ async function selectColor(colorName: string) {
   }
 }
 
-// CommentWidget Note Editing
+// CommentWidget Note Editing (View-only if spouse)
 function openCommentModal(partner: Partner, category: Category) {
   if (!cachedStats) return;
 
@@ -257,10 +424,26 @@ function openCommentModal(partner: Partner, category: Category) {
   const noteKey = `${category} пожелания` as keyof CoupleStats;
   const note = (cachedStats[noteKey] as any)?.[partner] || '';
 
-  commentModalTitle.textContent = `Заметка: ${category} (${partner})`;
-  commentInput.value = note;
+  const isSpouse = currentUserMode !== 'none' && currentUserMode !== partner;
+
+  if (isSpouse) {
+    commentModalTitle.textContent = `Заметка: ${category} (${partner}) [Просмотр]`;
+    commentInput.value = note || '(Пожелание не заполнено)';
+    commentInput.readOnly = true;
+    btnCommentClear.style.display = 'none';
+    btnCommentEnter.style.display = 'none';
+  } else {
+    commentModalTitle.textContent = `Заметка: ${category} (${partner})`;
+    commentInput.value = note;
+    commentInput.readOnly = false;
+    btnCommentClear.style.display = 'inline-block';
+    btnCommentEnter.style.display = 'inline-block';
+  }
+
   commentWidget.classList.add('open');
-  commentInput.focus();
+  if (!isSpouse) {
+    commentInput.focus();
+  }
 }
 
 function closeCommentModal() {
@@ -272,8 +455,12 @@ async function saveComment(text: string) {
   if (!activeCommentTarget || !cachedStats) return;
 
   const { partner, category } = activeCommentTarget;
-  const noteKey = `${category} пожелания` as keyof CoupleStats;
+  if (currentUserMode !== 'none' && currentUserMode !== partner) {
+    closeCommentModal();
+    return;
+  }
 
+  const noteKey = `${category} пожелания` as keyof CoupleStats;
   (cachedStats[noteKey] as any)[partner] = text;
   closeCommentModal();
   renderAll();
@@ -354,10 +541,25 @@ function initListeners() {
 
   btnMainRefresh.addEventListener('click', refreshData);
 
+  // User Mode Logout
+  btnUserLogout?.addEventListener('click', () => {
+    setUserMode('none');
+    showToast('🔓 Вы вышли из режима аккаунта. Все параметры доступны.');
+  });
+
+  // 10-tap Avatar Listeners
+  document.getElementById('avatar-box-irina')?.addEventListener('click', () => handleAvatarTap('Ирина'));
+  document.getElementById('avatar-box-artem')?.addEventListener('click', () => handleAvatarTap('Артем'));
+
   // Palette triggers
   document.getElementById('btn-color-irina')?.addEventListener('click', () => openColorPalette('Ирина'));
   document.getElementById('btn-color-artem')?.addEventListener('click', () => openColorPalette('Артем'));
   btnClosePalette.addEventListener('click', closeColorPalette);
+
+  // Close palette on backdrop click
+  coloursWidget.addEventListener('click', (e) => {
+    if (e.target === coloursWidget) closeColorPalette();
+  });
 
   // Palette buttons
   document.querySelectorAll<HTMLButtonElement>('.color-choice-btn').forEach((btn) => {
@@ -375,6 +577,12 @@ function initListeners() {
   btnCommentEnter.addEventListener('click', () => {
     saveComment(commentInput.value.trim());
   });
+  btnCommentClose?.addEventListener('click', closeCommentModal);
+
+  // Close comment modal on backdrop click
+  commentWidget.addEventListener('click', (e) => {
+    if (e.target === commentWidget) closeCommentModal();
+  });
 
   // Bind controls for both Irina and Artem
   for (const partner of PARTNERS) {
@@ -382,7 +590,7 @@ function initListeners() {
     for (const cat of CATEGORIES) {
       const cId = CATEGORY_ID[cat];
 
-      // Slider
+      // Slider input & change
       const slider = document.getElementById(`slider-${pId}-${cId}`) as HTMLInputElement;
       if (slider) {
         slider.addEventListener('input', () => {
@@ -412,6 +620,9 @@ function initListeners() {
       });
     }
   }
+
+  // Initial apply of saved user mode
+  applyUserModeUI();
 }
 
 // Register Service Worker for seamless background auto-updates
