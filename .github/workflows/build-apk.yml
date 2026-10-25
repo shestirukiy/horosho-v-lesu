@@ -79,17 +79,17 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/main'
         with:
           tag_name: latest
-          name: "Horosho V Lesu (Android APKs v1.4)"
+          name: "Horosho V Lesu (Android APKs v1.5 RPG HUD)"
           body: |
-            ### 📱 Хорошо в Лесу v1.4:
+            ### 🎮 Хорошо в Лесу v1.5 — Игровой RPG HUD Виджет:
             * 👩 **Для Артёма**: [HoroshoVLesu-Artem.apk](https://github.com/shestirukiy/horosho-v-lesu/releases/download/latest/HoroshoVLesu-Artem.apk) (ярлык на рабочем столе с фото Ирины + виджет статуса Ирины)
             * 👨 **Для Ирины**: [HoroshoVLesu-Irina.apk](https://github.com/shestirukiy/horosho-v-lesu/releases/download/latest/HoroshoVLesu-Irina.apk) (ярлык на рабочем столе с фото Артёма + виджет статуса Артёма)
             * 🌲 **Универсальный**: [HoroshoVLesu.apk](https://github.com/shestirukiy/horosho-v-lesu/releases/download/latest/HoroshoVLesu.apk)
 
-            **Обновления в v1.4:**
-            * В виджете убраны слова «Секс, Общение, Быт» — вместо них отображаются значки динамики (стрелки вверх/вниз или прочерк).
-            * Убран индикатор настроения из виджета и приложения.
-            * Постоянная цифровая подпись для бесшовных обновлений в будущем.
+            **Новинки v1.5:**
+            * 🎮 **Игровой RPG HUD виджет**: крупное фото партнера на весь фон виджета с аккуратным затемнением.
+            * 📊 **3 полоски прогресса (HUD)**: у каждой сферы (Секс ❤️, Общение 💬, Быт 🏠) своя шкала, числовое значение и стрелка динамики.
+            * 🔄 Переключение между партнерами кнопкой прямо в виджете.
           files: |
             HoroshoVLesu-Artem.apk
             HoroshoVLesu-Irina.apk

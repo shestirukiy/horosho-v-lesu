@@ -9,7 +9,7 @@
     android:updatePeriodMillis="1800000"
     android:initialLayout="@layout/widget_partner_status"
     android:description="@string/widget_description"
-    android:previewImage="@drawable/avatar_irina"
+    android:previewImage="@drawable/avatar_irina_card"
     android:resizeMode="horizontal|vertical"
     android:widgetCategory="home_screen">
 </appwidget-provider>

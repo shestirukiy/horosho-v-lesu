@@ -1,36 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/widget_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="@drawable/widget_bg"
-    android:padding="12dp"
-    android:gravity="center">
+    android:background="@drawable/widget_bg">
 
-    <!-- Top Row: Avatar & Partner Info -->
+    <!-- 1. Large Character Portrait Background -->
+    <ImageView
+        android:id="@+id/widget_bg_photo"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:src="@drawable/avatar_irina_card"
+        android:scaleType="centerCrop"
+        android:contentDescription="Портрет партнера" />
+
+    <!-- 2. Dark Scrim Gradient for HUD Contrast -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/widget_scrim" />
+
+    <!-- 3. Foreground HUD Content -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:layout_marginBottom="10dp">
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="8dp">
 
-        <ImageView
-            android:id="@+id/widget_partner_avatar"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:src="@drawable/avatar_irina"
-            android:scaleType="centerCrop"
-            android:contentDescription="Аватар партнера" />
-
+        <!-- Top Bar: Name & Switch Button -->
         <LinearLayout
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:paddingStart="10dp"
-            android:paddingEnd="4dp">
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
 
             <TextView
                 android:id="@+id/widget_partner_name"
@@ -38,134 +40,194 @@
                 android:layout_height="wrap_content"
                 android:text="ИРИНА"
                 android:textColor="#FFFFFF"
-                android:textSize="16sp"
-                android:textStyle="bold" />
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:shadowColor="#CC000000"
+                android:shadowDx="1"
+                android:shadowDy="2"
+                android:shadowRadius="4"
+                android:paddingStart="4dp"
+                android:paddingEnd="4dp" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1" />
+
+            <TextView
+                android:id="@+id/widget_btn_switch"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🔄"
+                android:textSize="13sp"
+                android:paddingStart="6dp"
+                android:paddingEnd="6dp"
+                android:paddingTop="2dp"
+                android:paddingBottom="2dp"
+                android:background="@drawable/widget_hud_row_bg" />
         </LinearLayout>
 
-        <TextView
-            android:id="@+id/widget_btn_switch"
-            android:layout_width="wrap_content"
+        <!-- Flexible Spacer pushes HUD to bottom -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <!-- 3. RPG Status Bars (HUD Pill Rows) -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="🔄"
-            android:textSize="16sp"
-            android:padding="6dp" />
+            android:orientation="vertical">
+
+            <!-- СЕКС ROW -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:background="@drawable/widget_hud_row_bg"
+                android:paddingStart="7dp"
+                android:paddingEnd="6dp"
+                android:paddingTop="3dp"
+                android:paddingBottom="3dp"
+                android:layout_marginBottom="3dp">
+
+                <ImageView
+                    android:layout_width="15dp"
+                    android:layout_height="15dp"
+                    android:src="@drawable/widget_heart"
+                    android:contentDescription="Секс"
+                    android:layout_marginEnd="6dp" />
+
+                <ProgressBar
+                    android:id="@+id/widget_pb_sex"
+                    style="?android:attr/progressBarStyleHorizontal"
+                    android:layout_width="0dp"
+                    android:layout_height="6dp"
+                    android:layout_weight="1"
+                    android:max="10"
+                    android:progress="5"
+                    android:progressDrawable="@drawable/widget_progress_sex" />
+
+                <TextView
+                    android:id="@+id/widget_val_sex"
+                    android:layout_width="16dp"
+                    android:layout_height="wrap_content"
+                    android:text="5"
+                    android:textColor="#FFFFFF"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:gravity="center"
+                    android:layout_marginStart="5dp"
+                    android:layout_marginEnd="3dp" />
+
+                <ImageView
+                    android:id="@+id/widget_dir_sex"
+                    android:layout_width="13dp"
+                    android:layout_height="13dp"
+                    android:src="@drawable/dir_equal"
+                    android:contentDescription="Динамика Секс" />
+            </LinearLayout>
+
+            <!-- ОБЩЕНИЕ ROW -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:background="@drawable/widget_hud_row_bg"
+                android:paddingStart="7dp"
+                android:paddingEnd="6dp"
+                android:paddingTop="3dp"
+                android:paddingBottom="3dp"
+                android:layout_marginBottom="3dp">
+
+                <ImageView
+                    android:layout_width="15dp"
+                    android:layout_height="15dp"
+                    android:src="@drawable/widget_bubble"
+                    android:contentDescription="Общение"
+                    android:layout_marginEnd="6dp" />
+
+                <ProgressBar
+                    android:id="@+id/widget_pb_comm"
+                    style="?android:attr/progressBarStyleHorizontal"
+                    android:layout_width="0dp"
+                    android:layout_height="6dp"
+                    android:layout_weight="1"
+                    android:max="10"
+                    android:progress="8"
+                    android:progressDrawable="@drawable/widget_progress_comm" />
+
+                <TextView
+                    android:id="@+id/widget_val_comm"
+                    android:layout_width="16dp"
+                    android:layout_height="wrap_content"
+                    android:text="8"
+                    android:textColor="#FFFFFF"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:gravity="center"
+                    android:layout_marginStart="5dp"
+                    android:layout_marginEnd="3dp" />
+
+                <ImageView
+                    android:id="@+id/widget_dir_comm"
+                    android:layout_width="13dp"
+                    android:layout_height="13dp"
+                    android:src="@drawable/dir_equal"
+                    android:contentDescription="Динамика Общение" />
+            </LinearLayout>
+
+            <!-- БЫТ ROW -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:background="@drawable/widget_hud_row_bg"
+                android:paddingStart="7dp"
+                android:paddingEnd="6dp"
+                android:paddingTop="3dp"
+                android:paddingBottom="3dp">
+
+                <ImageView
+                    android:layout_width="15dp"
+                    android:layout_height="15dp"
+                    android:src="@drawable/widget_home"
+                    android:contentDescription="Быт"
+                    android:layout_marginEnd="6dp" />
+
+                <ProgressBar
+                    android:id="@+id/widget_pb_dom"
+                    style="?android:attr/progressBarStyleHorizontal"
+                    android:layout_width="0dp"
+                    android:layout_height="6dp"
+                    android:layout_weight="1"
+                    android:max="10"
+                    android:progress="7"
+                    android:progressDrawable="@drawable/widget_progress_dom" />
+
+                <TextView
+                    android:id="@+id/widget_val_dom"
+                    android:layout_width="16dp"
+                    android:layout_height="wrap_content"
+                    android:text="7"
+                    android:textColor="#FFFFFF"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:gravity="center"
+                    android:layout_marginStart="5dp"
+                    android:layout_marginEnd="3dp" />
+
+                <ImageView
+                    android:id="@+id/widget_dir_dom"
+                    android:layout_width="13dp"
+                    android:layout_height="13dp"
+                    android:src="@drawable/dir_equal"
+                    android:contentDescription="Динамика Быт" />
+            </LinearLayout>
+        </LinearLayout>
     </LinearLayout>
 
-    <!-- Bottom Row: 3 Life Spheres (Icons, Values, Direction Arrows) -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center">
-
-        <!-- Секс Column -->
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center"
-            android:background="@drawable/widget_stat_box"
-            android:paddingTop="6dp"
-            android:paddingBottom="6dp"
-            android:layout_marginEnd="4dp">
-
-            <ImageView
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:src="@drawable/widget_heart"
-                android:contentDescription="Секс" />
-
-            <TextView
-                android:id="@+id/widget_val_sex"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="-"
-                android:textColor="#2ECC71"
-                android:textSize="16sp"
-                android:textStyle="bold" />
-
-            <ImageView
-                android:id="@+id/widget_dir_sex"
-                android:layout_width="16dp"
-                android:layout_height="16dp"
-                android:src="@drawable/dir_equal"
-                android:layout_marginTop="2dp"
-                android:contentDescription="Динамика Секс" />
-        </LinearLayout>
-
-        <!-- Общение Column -->
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center"
-            android:background="@drawable/widget_stat_box"
-            android:paddingTop="6dp"
-            android:paddingBottom="6dp"
-            android:layout_marginStart="2dp"
-            android:layout_marginEnd="2dp">
-
-            <ImageView
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:src="@drawable/widget_bubble"
-                android:contentDescription="Общение" />
-
-            <TextView
-                android:id="@+id/widget_val_comm"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="-"
-                android:textColor="#2ECC71"
-                android:textSize="16sp"
-                android:textStyle="bold" />
-
-            <ImageView
-                android:id="@+id/widget_dir_comm"
-                android:layout_width="16dp"
-                android:layout_height="16dp"
-                android:src="@drawable/dir_equal"
-                android:layout_marginTop="2dp"
-                android:contentDescription="Динамика Общение" />
-        </LinearLayout>
-
-        <!-- Быт Column -->
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center"
-            android:background="@drawable/widget_stat_box"
-            android:paddingTop="6dp"
-            android:paddingBottom="6dp"
-            android:layout_marginStart="4dp">
-
-            <ImageView
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:src="@drawable/widget_home"
-                android:contentDescription="Быт" />
-
-            <TextView
-                android:id="@+id/widget_val_dom"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="-"
-                android:textColor="#2ECC71"
-                android:textSize="16sp"
-                android:textStyle="bold" />
-
-            <ImageView
-                android:id="@+id/widget_dir_dom"
-                android:layout_width="16dp"
-                android:layout_height="16dp"
-                android:src="@drawable/dir_equal"
-                android:layout_marginTop="2dp"
-                android:contentDescription="Динамика Быт" />
-        </LinearLayout>
-    </LinearLayout>
-
-</LinearLayout>
+</FrameLayout>
