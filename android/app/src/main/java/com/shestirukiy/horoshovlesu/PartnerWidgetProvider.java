@@ -7,7 +7,11 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.RectF;
 import android.widget.RemoteViews;
 
 import org.json.JSONObject;
@@ -84,18 +88,23 @@ public class PartnerWidgetProvider extends AppWidgetProvider {
         String commDir = prefs.getString("stat_dir_comm_" + partner, "(=)");
         String domDir = prefs.getString("stat_dir_dom_" + partner, "(=)");
 
-        // Set Partner Info
+        // Set Partner Info & Large Background Portrait
         views.setTextViewText(R.id.widget_partner_name, partner.toUpperCase());
 
         if ("Артем".equals(partner)) {
-            views.setImageViewResource(R.id.widget_partner_avatar, R.drawable.avatar_artem);
+            views.setImageViewResource(R.id.widget_bg_photo, R.drawable.avatar_artem_card);
         } else {
-            views.setImageViewResource(R.id.widget_partner_avatar, R.drawable.avatar_irina);
+            views.setImageViewResource(R.id.widget_bg_photo, R.drawable.avatar_irina_card);
         }
 
-        // Set Need Values
+        // Draw RPG Progress Bars as 100% stable in-memory Bitmaps
+        views.setImageViewBitmap(R.id.widget_pb_sex, createProgressBarBitmap(sexVal, Color.parseColor("#FF4D6D")));
         views.setTextViewText(R.id.widget_val_sex, String.valueOf(sexVal));
+
+        views.setImageViewBitmap(R.id.widget_pb_comm, createProgressBarBitmap(commVal, Color.parseColor("#00D2D3")));
         views.setTextViewText(R.id.widget_val_comm, String.valueOf(commVal));
+
+        views.setImageViewBitmap(R.id.widget_pb_dom, createProgressBarBitmap(domVal, Color.parseColor("#2ECC71")));
         views.setTextViewText(R.id.widget_val_dom, String.valueOf(domVal));
 
         // Set Direction Icons
@@ -120,6 +129,28 @@ public class PartnerWidgetProvider extends AppWidgetProvider {
         views.setOnClickPendingIntent(R.id.widget_btn_switch, switchPending);
 
         appWidgetManager.updateAppWidget(appWidgetId, views);
+    }
+
+    private static Bitmap createProgressBarBitmap(int value, int fillColor) {
+        int width = 200;
+        int height = 14;
+        Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+
+        Paint bgPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        bgPaint.setColor(Color.parseColor("#4DFFFFFF"));
+        float radius = height / 2f;
+        canvas.drawRoundRect(new RectF(0, 0, width, height), radius, radius, bgPaint);
+
+        float progressFraction = Math.max(0f, Math.min(1f, value / 10f));
+        float fillWidth = width * progressFraction;
+        if (fillWidth > 0) {
+            Paint fillPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+            fillPaint.setColor(fillColor);
+            canvas.drawRoundRect(new RectF(0, 0, fillWidth, height), radius, radius, fillPaint);
+        }
+
+        return bitmap;
     }
 
     public static void fetchAndRefreshWidgets(Context context) {
