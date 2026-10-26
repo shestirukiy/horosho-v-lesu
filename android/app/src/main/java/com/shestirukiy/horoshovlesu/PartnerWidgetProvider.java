@@ -120,14 +120,6 @@ public class PartnerWidgetProvider extends AppWidgetProvider {
         );
         views.setOnClickPendingIntent(R.id.widget_root, openAppPending);
 
-        // Click on switch button toggles between spouses
-        Intent switchIntent = new Intent(context, PartnerWidgetProvider.class);
-        switchIntent.setAction(ACTION_SWITCH_PARTNER);
-        PendingIntent switchPending = PendingIntent.getBroadcast(
-                context, 1, switchIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
-        );
-        views.setOnClickPendingIntent(R.id.widget_btn_switch, switchPending);
-
         appWidgetManager.updateAppWidget(appWidgetId, views);
     }
 
