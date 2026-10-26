@@ -62,6 +62,11 @@ public class PartnerWidgetProvider extends AppWidgetProvider {
             }
             fetchAndRefreshWidgets(context);
         } else if (ACTION_REFRESH.equals(action)) {
+            AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
+            int[] appWidgetIds = appWidgetManager.getAppWidgetIds(new ComponentName(context, PartnerWidgetProvider.class));
+            for (int id : appWidgetIds) {
+                updateWidgetUI(context, appWidgetManager, id);
+            }
             fetchAndRefreshWidgets(context);
         }
     }
