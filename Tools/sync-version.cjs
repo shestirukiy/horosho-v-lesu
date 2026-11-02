@@ -71,15 +71,24 @@ if (fs.existsSync(downloadHtmlPath)) {
   let html = fs.readFileSync(downloadHtmlPath, 'utf8');
   html = html.replace(/<title>Скачать Хорошо в Лесу[^<]*<\/title>/, `<title>Скачать Хорошо в Лесу v${version}</title>`);
   html = html.replace(/<div class="badge">Версия[^<]*<\/div>/, `<div class="badge">Версия ${version} (сборка ${build})</div>`);
+  html = html.replace(/href="[^"]*github\.com\/[^"]*HoroshoVLesu(-v[^"]+)?\.apk"/g, `href="https://github.com/shestirukiy/horosho-v-lesu/releases/download/latest/HoroshoVLesu-v${version}.apk"`);
+  html = html.replace(/download="HoroshoVLesu(-v[^"]+)?\.apk"/g, `download="HoroshoVLesu-v${version}.apk"`);
+  html = html.replace(/<span>Скачать HoroshoVLesu(-v[^"]+)?\.apk<\/span>/g, `<span>Скачать HoroshoVLesu-v${version}.apk</span>`);
+  html = html.replace(/href="[^"]*github\.com\/[^"]*HoroshoVLesu(-v[^"]+)?\.zip"/g, `href="https://github.com/shestirukiy/horosho-v-lesu/releases/download/latest/HoroshoVLesu-v${version}.zip"`);
+  html = html.replace(/download="HoroshoVLesu(-v[^"]+)?\.zip"/g, `download="HoroshoVLesu-v${version}.zip"`);
+  html = html.replace(/<span>Скачать в ZIP[^<]*<\/span>/g, `<span>Скачать в ZIP (HoroshoVLesu-v${version}.zip)</span>`);
+  html = html.replace(/href="(\.\/|https:\/\/shestirukiy\.github\.io\/horosho-v-lesu\/)HoroshoVLesu(-v[^"]+)?\.apk"/g, `href="./HoroshoVLesu-v${version}.apk"`);
+  html = html.replace(/Зеркало 2: Прямая загрузка[^<]*с сайта/g, `Зеркало 2: Прямая загрузка HoroshoVLesu-v${version}.apk с сайта`);
   fs.writeFileSync(downloadHtmlPath, html, 'utf8');
-  console.log(`[Version Sync] Updated public/download.html`);
+  console.log(`[Version Sync] Updated public/download.html with HoroshoVLesu-v${version}.apk`);
 }
 
-// 5. Update index.html badges fallback text
+// 5. Update index.html badges fallback text & links
 const indexHtmlPath = path.join(rootDir, 'index.html');
 if (fs.existsSync(indexHtmlPath)) {
   let html = fs.readFileSync(indexHtmlPath, 'utf8');
   html = html.replace(/<span>Скачать APK v[^<]*<\/span>/, `<span>Скачать APK v${version}</span>`);
+  html = html.replace(/href="https:\/\/github\.com\/shestirukiy\/horosho-v-lesu\/releases\/download\/latest\/HoroshoVLesu(-v[^"]+)?\.zip"/, `href="https://github.com/shestirukiy/horosho-v-lesu/releases/download/latest/HoroshoVLesu-v${version}.zip"`);
   fs.writeFileSync(indexHtmlPath, html, 'utf8');
   console.log(`[Version Sync] Updated index.html`);
 }

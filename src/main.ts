@@ -629,7 +629,7 @@ function initWindowControls() {
 
   document.getElementById('btn-download-zip')?.addEventListener('click', (e) => {
     e.preventDefault();
-    const url = 'https://shestirukiy.github.io/horosho-v-lesu/HoroshoVLesu.zip';
+    const url = `https://github.com/shestirukiy/horosho-v-lesu/releases/download/latest/HoroshoVLesu-v${LATEST_APK_VERSION}.zip`;
     showToast('📦 Открытие загрузчика ZIP...', 2500);
     openExternal(url);
   });
@@ -834,7 +834,7 @@ function setupVersionDisplay() {
       showToast(`Установлен актуальный APK: ${cur}. RPG виджет активен!`, 3500);
     } else {
       showToast(`📥 Скачивание единого обновления APK v${LATEST_APK_VERSION}...`, 4000);
-      const apkUrl = 'https://github.com/shestirukiy/horosho-v-lesu/releases/download/latest/HoroshoVLesu.apk';
+      const apkUrl = `https://github.com/shestirukiy/horosho-v-lesu/releases/download/latest/HoroshoVLesu-v${LATEST_APK_VERSION}.apk`;
       setTimeout(() => {
         window.location.href = apkUrl;
       }, 500);

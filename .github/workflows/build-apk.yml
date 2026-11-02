@@ -47,26 +47,6 @@ jobs:
       - name: Sync Capacitor
         run: npx cap sync android
 
-      - name: Build Universal Android APK
-        run: |
-          cd android
-          chmod +x gradlew
-          ./gradlew assembleDebug
-          cd ..
-          cp android/app/build/outputs/apk/debug/app-debug.apk HoroshoVLesu.apk
-          zip -j HoroshoVLesu.zip HoroshoVLesu.apk
-          mkdir -p public
-          cp HoroshoVLesu.apk public/HoroshoVLesu.apk
-          cp HoroshoVLesu.zip public/HoroshoVLesu.zip
-
-      - name: Upload APK Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: HoroshoVLesu-APK
-          path: |
-            HoroshoVLesu.apk
-            HoroshoVLesu.zip
-
       - name: Read Dynamic Version
         id: dynamic_version
         run: |
@@ -74,6 +54,31 @@ jobs:
           BUILD=$(node -p "require('./version.json').build")
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "build=$BUILD" >> $GITHUB_OUTPUT
+
+      - name: Build Universal Android APK
+        run: |
+          VERSION="${{ steps.dynamic_version.outputs.version }}"
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
+          cd ..
+          cp android/app/build/outputs/apk/debug/app-debug.apk HoroshoVLesu.apk
+          cp HoroshoVLesu.apk "HoroshoVLesu-v${VERSION}.apk"
+          zip -j HoroshoVLesu.zip HoroshoVLesu.apk
+          zip -j "HoroshoVLesu-v${VERSION}.zip" "HoroshoVLesu-v${VERSION}.apk"
+          mkdir -p public
+          cp HoroshoVLesu.apk public/HoroshoVLesu.apk
+          cp "HoroshoVLesu-v${VERSION}.apk" "public/HoroshoVLesu-v${VERSION}.apk"
+          cp HoroshoVLesu.zip public/HoroshoVLesu.zip
+          cp "HoroshoVLesu-v${VERSION}.zip" "public/HoroshoVLesu-v${VERSION}.zip"
+
+      - name: Upload APK Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: HoroshoVLesu-APK
+          path: |
+            HoroshoVLesu*.apk
+            HoroshoVLesu*.zip
 
       - name: Create or Update GitHub Release
         uses: softprops/action-gh-release@v2
@@ -83,8 +88,9 @@ jobs:
           name: "Horosho V Lesu (Android APK v${{ steps.dynamic_version.outputs.version }} сборка ${{ steps.dynamic_version.outputs.build }})"
           body: |
             ### 🌲 Хорошо в Лесу v${{ steps.dynamic_version.outputs.version }} (сборка ${{ steps.dynamic_version.outputs.build }}):
+            * 📲 **[Скачать HoroshoVLesu-v${{ steps.dynamic_version.outputs.version }}.apk](https://github.com/shestirukiy/horosho-v-lesu/releases/download/latest/HoroshoVLesu-v${{ steps.dynamic_version.outputs.version }}.apk)** (Рекомендуется — имя с версией)
             * 📲 **[Скачать HoroshoVLesu.apk](https://github.com/shestirukiy/horosho-v-lesu/releases/download/latest/HoroshoVLesu.apk)**
-            * 📦 **[Скачать HoroshoVLesu.zip](https://github.com/shestirukiy/horosho-v-lesu/releases/download/latest/HoroshoVLesu.zip)** (в архиве, если браузер блокирует прямое скачивание APK)
+            * 📦 **[Скачать HoroshoVLesu-v${{ steps.dynamic_version.outputs.version }}.zip](https://github.com/shestirukiy/horosho-v-lesu/releases/download/latest/HoroshoVLesu-v${{ steps.dynamic_version.outputs.version }}.zip)** (в ZIP-архиве)
 
             **🎮 В виджете:**
             * Крупное фото партнера на весь фон виджета с аккуратным затемнением.
@@ -94,6 +100,8 @@ jobs:
           files: |
             HoroshoVLesu.apk
             HoroshoVLesu.zip
+            HoroshoVLesu-v${{ steps.dynamic_version.outputs.version }}.apk
+            HoroshoVLesu-v${{ steps.dynamic_version.outputs.version }}.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -101,6 +109,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add public/HoroshoVLesu.apk public/HoroshoVLesu.zip
+          git add public/HoroshoVLesu*.apk public/HoroshoVLesu*.zip
           git commit -m "Auto-update public APK and ZIP binaries [skip ci]" || true
           git push origin main || true
