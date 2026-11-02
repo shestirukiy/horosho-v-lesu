@@ -96,3 +96,11 @@ jobs:
             HoroshoVLesu.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Commit Binary APK to Repository
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add public/HoroshoVLesu.apk public/HoroshoVLesu.zip
+          git commit -m "Auto-update public APK and ZIP binaries [skip ci]" || true
+          git push origin main || true

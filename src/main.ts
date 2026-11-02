@@ -834,7 +834,7 @@ function setupVersionDisplay() {
       showToast(`Установлен актуальный APK: ${cur}. RPG виджет активен!`, 3500);
     } else {
       showToast(`📥 Скачивание единого обновления APK v${LATEST_APK_VERSION}...`, 4000);
-      const apkUrl = 'https://shestirukiy.github.io/horosho-v-lesu/HoroshoVLesu.apk';
+      const apkUrl = 'https://github.com/shestirukiy/horosho-v-lesu/releases/download/latest/HoroshoVLesu.apk';
       setTimeout(() => {
         window.location.href = apkUrl;
       }, 500);
