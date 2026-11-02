@@ -67,21 +67,30 @@ jobs:
             HoroshoVLesu.apk
             HoroshoVLesu.zip
 
+      - name: Read Dynamic Version
+        id: dynamic_version
+        run: |
+          VERSION=$(node -p "require('./version.json').version")
+          BUILD=$(node -p "require('./version.json').build")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "build=$BUILD" >> $GITHUB_OUTPUT
+
       - name: Create or Update GitHub Release
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/main'
         with:
           tag_name: latest
-          name: "Horosho V Lesu (Android APK v1.5)"
+          name: "Horosho V Lesu (Android APK v${{ steps.dynamic_version.outputs.version }} сборка ${{ steps.dynamic_version.outputs.build }})"
           body: |
-            ### 🌲 Хорошо в Лесу v1.5 (Единый APK для обоих!):
+            ### 🌲 Хорошо в Лесу v${{ steps.dynamic_version.outputs.version }} (сборка ${{ steps.dynamic_version.outputs.build }}):
             * 📲 **[Скачать HoroshoVLesu.apk](https://github.com/shestirukiy/horosho-v-lesu/releases/download/latest/HoroshoVLesu.apk)**
             * 📦 **[Скачать HoroshoVLesu.zip](https://github.com/shestirukiy/horosho-v-lesu/releases/download/latest/HoroshoVLesu.zip)** (в архиве, если браузер блокирует прямое скачивание APK)
 
             **🎮 В виджете:**
             * Крупное фото партнера на весь фон виджета с аккуратным затемнением.
             * 3 цветные игровые шкалы (HUD): Секс ❤️, Общение 💬, Быт 🏠 со значениями и значками динамики.
-            * Кнопка `🔄` прямо на виджете для мгновенного переключения партнера.
+            * Моментальное синхронное обновление виджета при изменении данных в приложении.
+            * Тап по имени партнера на виджете для мгновенного переключения между Ириной и Артемом.
           files: |
             HoroshoVLesu.apk
             HoroshoVLesu.zip

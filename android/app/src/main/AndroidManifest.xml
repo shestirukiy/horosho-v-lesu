@@ -45,6 +45,8 @@
             <intent-filter>
                 <action android:name="com.shestirukiy.horoshovlesu.ACTION_SWITCH_PARTNER" />
                 <action android:name="com.shestirukiy.horoshovlesu.ACTION_REFRESH" />
+                <action android:name="com.shestirukiy.horoshovlesu.ACTION_SIMULATE_ABSENCE" />
+                <action android:name="com.shestirukiy.horoshovlesu.ACTION_RESET_ABSENCE" />
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"
@@ -55,4 +57,6 @@
     <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.VIBRATE" />
 </manifest>

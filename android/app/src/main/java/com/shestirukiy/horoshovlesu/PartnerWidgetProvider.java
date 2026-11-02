@@ -1,5 +1,7 @@
 package com.shestirukiy.horoshovlesu;
 
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
@@ -8,11 +10,16 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
+import android.os.Build;
+import android.view.View;
 import android.widget.RemoteViews;
+
+import androidx.core.app.NotificationCompat;
 
 import org.json.JSONObject;
 
@@ -28,8 +35,14 @@ public class PartnerWidgetProvider extends AppWidgetProvider {
 
     public static final String ACTION_SWITCH_PARTNER = "com.shestirukiy.horoshovlesu.ACTION_SWITCH_PARTNER";
     public static final String ACTION_REFRESH = "com.shestirukiy.horoshovlesu.ACTION_REFRESH";
-    private static final String SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzSGd0RJp8SOB2B3Bc4UL7MbqjAty7BrIdNxFjSigYbdSflnW6YziJDs3J7b6J27Sbb/exec";
-    private static final String PREFS_NAME = "horosho_widget_prefs";
+    public static final String ACTION_SIMULATE_ABSENCE = "com.shestirukiy.horoshovlesu.ACTION_SIMULATE_ABSENCE";
+    public static final String ACTION_RESET_ABSENCE = "com.shestirukiy.horoshovlesu.ACTION_RESET_ABSENCE";
+
+    public static final String SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzSGd0RJp8SOB2B3Bc4UL7MbqjAty7BrIdNxFjSigYbdSflnW6YziJDs3J7b6J27Sbb/exec";
+    public static final String PREFS_NAME = "horosho_widget_prefs";
+    public static final int NOTIFICATION_ID = 48123;
+    public static final String CHANNEL_ID = "partner_attention_channel";
+    public static final String ATTENTION_MESSAGE = "Никто на меня не обращает внимания...";
 
     private static final ExecutorService executor = Executors.newSingleThreadExecutor();
 
@@ -45,7 +58,8 @@ public class PartnerWidgetProvider extends AppWidgetProvider {
     @Override
     public void onReceive(Context context, Intent intent) {
         super.onReceive(context, intent);
-        String action = intent.getAction();
+        String action = intent != null ? intent.getAction() : null;
+        if (action == null) return;
 
         if (ACTION_SWITCH_PARTNER.equals(action)) {
             // Toggle partner
@@ -54,30 +68,205 @@ public class PartnerWidgetProvider extends AppWidgetProvider {
             String next = "Ирина".equals(current) ? "Артем" : "Ирина";
             prefs.edit().putString("target_partner", next).apply();
 
-            // Refresh UI and fetch
-            AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
-            int[] appWidgetIds = appWidgetManager.getAppWidgetIds(new ComponentName(context, PartnerWidgetProvider.class));
-            for (int id : appWidgetIds) {
-                updateWidgetUI(context, appWidgetManager, id);
-            }
+            updateAllWidgets(context);
             fetchAndRefreshWidgets(context);
         } else if (ACTION_REFRESH.equals(action)) {
-            AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
-            int[] appWidgetIds = appWidgetManager.getAppWidgetIds(new ComponentName(context, PartnerWidgetProvider.class));
-            for (int id : appWidgetIds) {
-                updateWidgetUI(context, appWidgetManager, id);
-            }
+            updateAllWidgets(context);
             fetchAndRefreshWidgets(context);
+        } else if (ACTION_SIMULATE_ABSENCE.equals(action)) {
+            simulateAbsence(context);
+        } else if (ACTION_RESET_ABSENCE.equals(action)) {
+            resetAbsence(context);
         }
     }
 
-    private static String getTargetPartner(Context context) {
+    public static String getTargetPartner(Context context) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         String defaultPartner = "Ирина";
         try {
             defaultPartner = context.getString(R.string.widget_target_partner);
         } catch (Exception ignored) {}
         return prefs.getString("target_partner", defaultPartner);
+    }
+
+    public static void updateAllWidgets(Context context) {
+        AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
+        ComponentName widgetComponent = new ComponentName(context, PartnerWidgetProvider.class);
+        int[] appWidgetIds = appWidgetManager.getAppWidgetIds(widgetComponent);
+        for (int id : appWidgetIds) {
+            updateWidgetUI(context, appWidgetManager, id);
+        }
+    }
+
+    public static boolean isAttentionAlertActive(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        if (prefs.getBoolean("debug_force_attention_alert", false)) {
+            return true;
+        }
+
+        long lastOpen = prefs.getLong("last_app_open_time", 0);
+        if (lastOpen == 0) {
+            return false;
+        }
+
+        long now = System.currentTimeMillis();
+        long twoDaysMs = 2L * 24 * 60 * 60 * 1000L; // 48 hours
+        boolean isInactive2Days = (now - lastOpen) >= twoDaysMs;
+
+        String partner = getTargetPartner(context);
+        boolean partnerChanged = prefs.getBoolean("partner_has_changed_since_last_visit_" + partner, false);
+
+        return isInactive2Days && partnerChanged;
+    }
+
+    public static void simulateAbsence(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        String partner = getTargetPartner(context);
+        long threeDaysAgo = System.currentTimeMillis() - (3L * 24 * 60 * 60 * 1000L);
+        prefs.edit()
+            .putLong("last_app_open_time", threeDaysAgo)
+            .putBoolean("partner_has_changed_since_last_visit_" + partner, true)
+            .putBoolean("debug_force_attention_alert", true)
+            .putBoolean("debug_force_notification", true)
+            .putLong("last_attention_notification_time", 0)
+            .apply();
+
+        updateAllWidgets(context);
+        checkAndSendAttentionNotification(context);
+    }
+
+    public static void resetAbsence(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        String partner = getTargetPartner(context);
+        prefs.edit()
+            .putLong("last_app_open_time", System.currentTimeMillis())
+            .putBoolean("partner_has_changed_since_last_visit_" + partner, false)
+            .putBoolean("debug_force_attention_alert", false)
+            .apply();
+
+        NotificationManager nm = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        if (nm != null) {
+            nm.cancel(NOTIFICATION_ID);
+        }
+
+        updateAllWidgets(context);
+    }
+
+    public static void checkAndSendAttentionNotification(Context context) {
+        if (!isAttentionAlertActive(context)) {
+            NotificationManager nm = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+            if (nm != null) {
+                nm.cancel(NOTIFICATION_ID);
+            }
+            return;
+        }
+
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        long now = System.currentTimeMillis();
+        long lastNotificationTime = prefs.getLong("last_attention_notification_time", 0);
+        long twelveHoursMs = 12L * 60 * 60 * 1000L;
+
+        boolean force = prefs.getBoolean("debug_force_notification", false);
+        if (!force && (now - lastNotificationTime < twelveHoursMs)) {
+            return;
+        }
+
+        prefs.edit()
+            .putLong("last_attention_notification_time", now)
+            .putBoolean("debug_force_notification", false)
+            .apply();
+
+        sendNotification(context);
+    }
+
+    public static void sendNotification(Context context) {
+        try {
+            NotificationManager nm = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+            if (nm == null) return;
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                NotificationChannel channel = new NotificationChannel(
+                    CHANNEL_ID,
+                    "Хорошо в Лесу: Внимание",
+                    NotificationManager.IMPORTANCE_HIGH
+                );
+                channel.setDescription("Уведомления о статусе и внимании партнера");
+                channel.enableVibration(true);
+                nm.createNotificationChannel(channel);
+            }
+
+            String partner = getTargetPartner(context);
+            String title = partner;
+
+            Intent openAppIntent = new Intent(context, MainActivity.class);
+            openAppIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            PendingIntent pendingIntent = PendingIntent.getActivity(
+                context,
+                0,
+                openAppIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+            );
+
+            Bitmap largeAvatar = null;
+            try {
+                int avatarRes = "Артем".equals(partner) ? R.drawable.avatar_artem_card : R.drawable.avatar_irina_card;
+                largeAvatar = BitmapFactory.decodeResource(context.getResources(), avatarRes);
+            } catch (Exception ignored) {}
+
+            NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
+                .setSmallIcon(R.drawable.widget_heart)
+                .setContentTitle(title)
+                .setContentText(ATTENTION_MESSAGE)
+                .setStyle(new NotificationCompat.BigTextStyle().bigText(ATTENTION_MESSAGE))
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setAutoCancel(true)
+                .setContentIntent(pendingIntent);
+
+            if (largeAvatar != null) {
+                builder.setLargeIcon(largeAvatar);
+            }
+
+            nm.notify(NOTIFICATION_ID, builder.build());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void recordUserVisit(Context context, String partnerName) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        long now = System.currentTimeMillis();
+        editor.putLong("last_app_open_time", now);
+        editor.putBoolean("debug_force_attention_alert", false);
+
+        String partner = partnerName != null && !partnerName.isEmpty() ? partnerName : getTargetPartner(context);
+        editor.putBoolean("partner_has_changed_since_last_visit_" + partner, false);
+
+        // Snapshot current partner stats as baseline
+        String currentSig = buildCurrentSignature(prefs, partner);
+        editor.putString("partner_snapshot_at_last_visit_" + partner, currentSig);
+        editor.apply();
+
+        // Dismiss notification and hide comic bubble
+        NotificationManager nm = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        if (nm != null) {
+            nm.cancel(NOTIFICATION_ID);
+        }
+
+        updateAllWidgets(context);
+    }
+
+    private static String buildCurrentSignature(SharedPreferences prefs, String partner) {
+        int sex = prefs.getInt("stat_sex_" + partner, 5);
+        int comm = prefs.getInt("stat_comm_" + partner, 8);
+        int dom = prefs.getInt("stat_dom_" + partner, 7);
+        String sexDir = prefs.getString("stat_dir_sex_" + partner, "(=)");
+        String commDir = prefs.getString("stat_dir_comm_" + partner, "(=)");
+        String domDir = prefs.getString("stat_dir_dom_" + partner, "(=)");
+        String sexWish = prefs.getString("stat_wish_sex_" + partner, "");
+        String commWish = prefs.getString("stat_wish_comm_" + partner, "");
+        String domWish = prefs.getString("stat_wish_dom_" + partner, "");
+        return partner + "#" + sex + "#" + comm + "#" + dom + "#" + sexDir + "#" + commDir + "#" + domDir + "#" + sexWish + "#" + commWish + "#" + domWish;
     }
 
     private static void updateWidgetUI(Context context, AppWidgetManager appWidgetManager, int appWidgetId) {
@@ -117,6 +306,21 @@ public class PartnerWidgetProvider extends AppWidgetProvider {
         views.setImageViewResource(R.id.widget_dir_comm, getDirDrawable(commDir));
         views.setImageViewResource(R.id.widget_dir_dom, getDirDrawable(domDir));
 
+        // Comic Speech Bubble
+        boolean showBubble = isAttentionAlertActive(context);
+        views.setViewVisibility(R.id.widget_comic_bubble_container, showBubble ? View.VISIBLE : View.GONE);
+        if (showBubble) {
+            views.setTextViewText(R.id.widget_comic_bubble_text, ATTENTION_MESSAGE);
+        }
+
+        // Click on partner name toggles spouse (Artem <-> Irina)
+        Intent switchIntent = new Intent(context, PartnerWidgetProvider.class);
+        switchIntent.setAction(ACTION_SWITCH_PARTNER);
+        PendingIntent switchPending = PendingIntent.getBroadcast(
+                context, 1, switchIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+        );
+        views.setOnClickPendingIntent(R.id.widget_partner_name, switchPending);
+
         // Click on widget root opens MainActivity (the app!)
         Intent openAppIntent = new Intent(context, MainActivity.class);
         openAppIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -150,6 +354,92 @@ public class PartnerWidgetProvider extends AppWidgetProvider {
         return bitmap;
     }
 
+    public static void saveStatsJsonToPrefs(Context context, JSONObject json) {
+        try {
+            SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = prefs.edit();
+
+            String[] partners = new String[]{"Ирина", "Артем"};
+            for (String p : partners) {
+                int sex = prefs.getInt("stat_sex_" + p, 5);
+                int comm = prefs.getInt("stat_comm_" + p, 8);
+                int dom = prefs.getInt("stat_dom_" + p, 7);
+                String sexDir = prefs.getString("stat_dir_sex_" + p, "(=)");
+                String commDir = prefs.getString("stat_dir_comm_" + p, "(=)");
+                String domDir = prefs.getString("stat_dir_dom_" + p, "(=)");
+                String sexWish = prefs.getString("stat_wish_sex_" + p, "");
+                String commWish = prefs.getString("stat_wish_comm_" + p, "");
+                String domWish = prefs.getString("stat_wish_dom_" + p, "");
+
+                if (json.has("Секс")) {
+                    sex = json.getJSONObject("Секс").optInt(p, sex);
+                    editor.putInt("stat_sex_" + p, sex);
+                }
+                if (json.has("Общение")) {
+                    comm = json.getJSONObject("Общение").optInt(p, comm);
+                    editor.putInt("stat_comm_" + p, comm);
+                }
+                if (json.has("Быт")) {
+                    dom = json.getJSONObject("Быт").optInt(p, dom);
+                    editor.putInt("stat_dom_" + p, dom);
+                }
+                if (json.has("Секс динамика")) {
+                    sexDir = json.getJSONObject("Секс динамика").optString(p, sexDir);
+                    editor.putString("stat_dir_sex_" + p, sexDir);
+                }
+                if (json.has("Общение динамика")) {
+                    commDir = json.getJSONObject("Общение динамика").optString(p, commDir);
+                    editor.putString("stat_dir_comm_" + p, commDir);
+                }
+                if (json.has("Быт динамика")) {
+                    domDir = json.getJSONObject("Быт динамика").optString(p, domDir);
+                    editor.putString("stat_dir_dom_" + p, domDir);
+                }
+                if (json.has("Секс пожелания")) {
+                    sexWish = json.getJSONObject("Секс пожелания").optString(p, sexWish);
+                    editor.putString("stat_wish_sex_" + p, sexWish);
+                }
+                if (json.has("Общение пожелания")) {
+                    commWish = json.getJSONObject("Общение пожелания").optString(p, commWish);
+                    editor.putString("stat_wish_comm_" + p, commWish);
+                }
+                if (json.has("Быт пожелания")) {
+                    domWish = json.getJSONObject("Быт пожелания").optString(p, domWish);
+                    editor.putString("stat_wish_dom_" + p, domWish);
+                }
+
+                // Signature check for changes made by partner
+                String currentSig = p + "#" + sex + "#" + comm + "#" + dom + "#" + sexDir + "#" + commDir + "#" + domDir + "#" + sexWish + "#" + commWish + "#" + domWish;
+                String savedSig = prefs.getString("partner_snapshot_at_last_visit_" + p, null);
+
+                if (savedSig == null) {
+                    editor.putString("partner_snapshot_at_last_visit_" + p, currentSig);
+                } else if (!savedSig.equals(currentSig)) {
+                    editor.putBoolean("partner_has_changed_since_last_visit_" + p, true);
+                }
+            }
+            editor.apply();
+
+            // Update all widget instances immediately
+            updateAllWidgets(context);
+
+            // Check and trigger notifications if condition met
+            checkAndSendAttentionNotification(context);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void updateStatsDirectly(Context context, String jsonStr) {
+        if (jsonStr == null || jsonStr.isEmpty()) return;
+        try {
+            JSONObject json = new JSONObject(jsonStr);
+            saveStatsJsonToPrefs(context, json);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     public static void fetchAndRefreshWidgets(Context context) {
         executor.execute(() -> {
             try {
@@ -157,38 +447,7 @@ public class PartnerWidgetProvider extends AppWidgetProvider {
                 if (jsonStr == null || jsonStr.isEmpty()) return;
 
                 JSONObject json = new JSONObject(jsonStr);
-                SharedPreferences.Editor editor = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit();
-
-                String[] partners = new String[]{"Ирина", "Артем"};
-                for (String p : partners) {
-                    if (json.has("Секс")) {
-                        editor.putInt("stat_sex_" + p, json.getJSONObject("Секс").optInt(p, 5));
-                    }
-                    if (json.has("Общение")) {
-                        editor.putInt("stat_comm_" + p, json.getJSONObject("Общение").optInt(p, 8));
-                    }
-                    if (json.has("Быт")) {
-                        editor.putInt("stat_dom_" + p, json.getJSONObject("Быт").optInt(p, 7));
-                    }
-                    if (json.has("Секс динамика")) {
-                        editor.putString("stat_dir_sex_" + p, json.getJSONObject("Секс динамика").optString(p, "(=)"));
-                    }
-                    if (json.has("Общение динамика")) {
-                        editor.putString("stat_dir_comm_" + p, json.getJSONObject("Общение динамика").optString(p, "(=)"));
-                    }
-                    if (json.has("Быт динамика")) {
-                        editor.putString("stat_dir_dom_" + p, json.getJSONObject("Быт динамика").optString(p, "(=)"));
-                    }
-                }
-                editor.apply();
-
-                // Update all widget instances
-                AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
-                ComponentName widgetComponent = new ComponentName(context, PartnerWidgetProvider.class);
-                int[] appWidgetIds = appWidgetManager.getAppWidgetIds(widgetComponent);
-                for (int id : appWidgetIds) {
-                    updateWidgetUI(context, appWidgetManager, id);
-                }
+                saveStatsJsonToPrefs(context, json);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -211,9 +470,11 @@ public class PartnerWidgetProvider extends AppWidgetProvider {
         conn.setReadTimeout(8000);
         int status = conn.getResponseCode();
 
-        if (status == HttpURLConnection.HTTP_MOVED_TEMP || status == HttpURLConnection.HTTP_MOVED_PERM || status == 307) {
+        if (status >= 300 && status < 400) {
             String newUrl = conn.getHeaderField("Location");
-            return fetchUrlWithRedirects(newUrl);
+            if (newUrl != null && !newUrl.isEmpty()) {
+                return fetchUrlWithRedirects(newUrl);
+            }
         }
 
         if (status != HttpURLConnection.HTTP_OK) {

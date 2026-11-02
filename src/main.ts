@@ -1,4 +1,17 @@
 import { fetchStats, updateStat, CoupleStats } from './api';
+import { APP_VERSION, APP_BUILD, LATEST_APK_VERSION, LATEST_APK_BUILD } from './version';
+
+function parseApkBuildNumber(verStr: string | null): number {
+  if (!verStr) return 0;
+  const match = verStr.match(/сборка\s+(\d+)/i);
+  return match ? parseInt(match[1], 10) : 0;
+}
+
+function isApkUpToDate(verStr: string | null): boolean {
+  if (!verStr) return false;
+  const build = parseApkBuildNumber(verStr);
+  return build >= LATEST_APK_BUILD;
+}
 
 // Partners and Categories
 type Partner = 'Ирина' | 'Артем';
@@ -25,6 +38,85 @@ function getStateWord(val: number): { text: string; cssClass: string } {
   if (val >= 7) return { text: 'Нормально', cssClass: 'status-ok' };
   if (val >= 4) return { text: 'Так себе', cssClass: 'status-so' };
   return { text: 'Плохо', cssClass: 'status-bad' };
+}
+
+// Absence & Attention Alert State
+const TWO_DAYS_MS = 2 * 24 * 60 * 60 * 1000;
+let partnerAlertActive = false;
+
+function getPartnerSignature(stats: CoupleStats, p: Partner): string {
+  return [
+    p,
+    stats['Секс']?.[p] ?? 5,
+    stats['Общение']?.[p] ?? 8,
+    stats['Быт']?.[p] ?? 7,
+    stats['Секс динамика']?.[p] ?? '(=)',
+    stats['Общение динамика']?.[p] ?? '(=)',
+    stats['Быт динамика']?.[p] ?? '(=)',
+    stats['Секс пожелания']?.[p] ?? '',
+    stats['Общение пожелания']?.[p] ?? '',
+    stats['Быт пожелания']?.[p] ?? '',
+  ].join('#');
+}
+
+function renderComicBubbles() {
+  const bubbleIrina = document.getElementById('comic-bubble-irina');
+  const bubbleArtem = document.getElementById('comic-bubble-artem');
+  const partner = currentUserMode === 'Артем' ? 'Ирина' : currentUserMode === 'Ирина' ? 'Артем' : 'Ирина';
+
+  if (bubbleIrina) {
+    bubbleIrina.style.display = partnerAlertActive && partner === 'Ирина' ? 'block' : 'none';
+  }
+  if (bubbleArtem) {
+    bubbleArtem.style.display = partnerAlertActive && partner === 'Артем' ? 'block' : 'none';
+  }
+}
+
+function checkAbsenceAlert(stats: CoupleStats) {
+  if ((window as any).__PARTNER_ALERT_ACTIVE__ !== undefined) {
+    partnerAlertActive = Boolean((window as any).__PARTNER_ALERT_ACTIVE__);
+    renderComicBubbles();
+    return;
+  }
+
+  const lastVisit = Number(localStorage.getItem('horosho_last_visit_time') || 0);
+  const now = Date.now();
+  const partner: Partner = currentUserMode === 'Артем' ? 'Ирина' : currentUserMode === 'Ирина' ? 'Артем' : 'Ирина';
+
+  if (lastVisit > 0 && now - lastVisit >= TWO_DAYS_MS) {
+    const savedSig = localStorage.getItem(`horosho_partner_sig_${partner}`);
+    const currentSig = getPartnerSignature(stats, partner);
+    if (savedSig && savedSig !== currentSig) {
+      partnerAlertActive = true;
+    }
+  }
+
+  renderComicBubbles();
+}
+
+function clearAbsenceAlert() {
+  partnerAlertActive = false;
+  renderComicBubbles();
+
+  localStorage.setItem('horosho_last_visit_time', String(Date.now()));
+  if (cachedStats) {
+    for (const p of PARTNERS) {
+      localStorage.setItem(`horosho_partner_sig_${p}`, getPartnerSignature(cachedStats, p));
+    }
+  }
+
+  (window as any).AndroidNativeBridge?.resetAbsenceAlert?.();
+}
+
+// Sync stats to native Android widget immediately
+function syncStatsToNativeWidget(stats: CoupleStats | null) {
+  if (!stats) return;
+  try {
+    const jsonStr = JSON.stringify(stats);
+    (window as any).AndroidNativeBridge?.updateWidgetStats?.(jsonStr);
+  } catch (e) {
+    console.error('Failed to sync stats to native widget', e);
+  }
 }
 
 // Directions cycling
@@ -115,6 +207,9 @@ function applyUserModeUI() {
     (window as any).AndroidNativeBridge?.setTargetPartner?.('Ирина');
   } else if (currentUserMode === 'Ирина') {
     (window as any).AndroidNativeBridge?.setTargetPartner?.('Артем');
+  }
+  if (cachedStats) {
+    syncStatsToNativeWidget(cachedStats);
   }
 
   if (currentUserMode === 'none') {
@@ -300,6 +395,8 @@ async function refreshData() {
     const stats = await fetchStats();
     cachedStats = stats;
     renderAll();
+    checkAbsenceAlert(stats);
+    syncStatsToNativeWidget(stats);
     setSyncState('Синхронизировано');
   } catch (err: any) {
     console.error(err);
@@ -324,6 +421,7 @@ async function handleSliderChange(partner: Partner, category: Category, newVal: 
 
   // Optimistic local update
   (cachedStats[category] as any)[partner] = newVal;
+  syncStatsToNativeWidget(cachedStats);
   const numLabel = document.getElementById(`num-${pId}-${cId}`);
   const statusLabel = document.getElementById(`status-text-${pId}-${cId}`);
   if (numLabel) numLabel.textContent = String(newVal);
@@ -361,6 +459,7 @@ async function handleDirectionCycle(partner: Partner, category: Category) {
   const nextDir = DIRECTIONS[(idx + 1) % DIRECTIONS.length];
 
   (cachedStats[dirKey] as any)[partner] = nextDir;
+  syncStatsToNativeWidget(cachedStats);
   const dirImg = document.getElementById(`dir-img-${pId}-${cId}`) as HTMLImageElement;
   if (dirImg) dirImg.src = getDirIcon(nextDir);
 
@@ -421,6 +520,7 @@ async function saveComment(text: string) {
 
   const noteKey = `${category} пожелания` as keyof CoupleStats;
   (cachedStats[noteKey] as any)[partner] = text;
+  syncStatsToNativeWidget(cachedStats);
   closeCommentModal();
   renderAll();
 
@@ -488,7 +588,7 @@ function initWindowControls() {
   btnUpdateApp.addEventListener('click', () => {
     const isCapacitor = !!(window as any).Capacitor;
     const bridgeVer = (window as any).AndroidNativeBridge?.getApkVersion?.() || (window as any).__NATIVE_APK_VERSION__;
-    const isLatestApk = bridgeVer && (bridgeVer.includes('1.5') || bridgeVer.includes('сборка 7'));
+    const isLatestApk = isApkUpToDate(bridgeVer);
 
     if (isCapacitor && !isLatestApk) {
       showToast('🌐 Открываем страницу загрузки в браузере...', 3500);
@@ -619,6 +719,34 @@ function initListeners() {
     }
   }
 
+  // Comic speech bubble click listeners: dismiss alert on tap
+  document.getElementById('comic-bubble-irina')?.addEventListener('click', () => {
+    clearAbsenceAlert();
+    showToast('Спасибо за внимание! ❤️ Облачко скрыто', 2500);
+  });
+  document.getElementById('comic-bubble-artem')?.addEventListener('click', () => {
+    clearAbsenceAlert();
+    showToast('Спасибо за внимание! ❤️ Облачко скрыто', 2500);
+  });
+
+  // Global test simulation helpers
+  (window as any).__onPartnerAlertStatus = (active: boolean) => {
+    partnerAlertActive = Boolean(active);
+    renderComicBubbles();
+  };
+
+  (window as any).simulateAbsenceAlert = () => {
+    partnerAlertActive = true;
+    renderComicBubbles();
+    (window as any).AndroidNativeBridge?.simulateAbsenceAlert?.();
+    showToast('💭 Тест: "Никто на меня не обращает внимания..." активировано!', 3000);
+  };
+
+  (window as any).resetAbsenceAlert = () => {
+    clearAbsenceAlert();
+    showToast('✅ Статус внимания сброшен', 2000);
+  };
+
   // Initial apply of saved user mode
   applyUserModeUI();
 
@@ -632,7 +760,7 @@ function setupVersionDisplay() {
 
   function updateBadges(apkVer: string | null) {
     if (apkVer) {
-      const isLatest = apkVer.includes('1.5') || apkVer.includes('сборка 7');
+      const isLatest = isApkUpToDate(apkVer);
       if (isLatest) {
         const text = `APK ${apkVer}`;
         if (headerBadge) {
@@ -641,19 +769,19 @@ function setupVersionDisplay() {
           headerBadge.title = `Установлен актуальный APK ${apkVer} с RPG HUD виджетом`;
         }
         if (footerBadge) {
-          footerBadge.textContent = `${text} • Web v1.5`;
+          footerBadge.textContent = `${text} • Web v${APP_VERSION}`;
           footerBadge.style.color = '#2ecc71';
           footerBadge.style.opacity = '0.9';
         }
       } else {
-        const text = `⚠️ Доступен v1.5 (нажмите обновить)`;
+        const text = `⚠️ Доступен v${LATEST_APK_VERSION} (нажмите обновить)`;
         if (headerBadge) {
           headerBadge.textContent = text;
           headerBadge.style.color = '#e67e22';
-          headerBadge.title = `У вас ${apkVer}. Нажмите, чтобы обновиться до v1.5 с RPG HUD виджетом!`;
+          headerBadge.title = `У вас ${apkVer}. Нажмите, чтобы обновиться до v${LATEST_APK_VERSION} (сб. ${LATEST_APK_BUILD})!`;
         }
         if (footerBadge) {
-          footerBadge.textContent = `У вас ${apkVer} ➔ Доступен v1.5`;
+          footerBadge.textContent = `У вас ${apkVer} ➔ Доступен v${LATEST_APK_VERSION}`;
           footerBadge.style.color = '#e67e22';
           footerBadge.style.opacity = '0.9';
         }
@@ -665,14 +793,14 @@ function setupVersionDisplay() {
         if (headerBadge) {
           headerBadge.textContent = text;
           headerBadge.style.color = '#e67e22';
-          headerBadge.title = 'Обновите APK до v1.5 в релизах, чтобы появился виджет';
+          headerBadge.title = `Обновите APK до v${LATEST_APK_VERSION} в релизах, чтобы появился виджет`;
         }
         if (footerBadge) {
-          footerBadge.textContent = `${text} • Web v1.5`;
+          footerBadge.textContent = `${text} • Web v${APP_VERSION}`;
           footerBadge.style.color = '#e67e22';
         }
       } else {
-        const text = `Web v1.5`;
+        const text = `Web v${APP_VERSION} (сб. ${APP_BUILD})`;
         if (headerBadge) headerBadge.textContent = text;
         if (footerBadge) footerBadge.textContent = text;
       }
@@ -700,12 +828,12 @@ function setupVersionDisplay() {
   // Click on badge shows details toast / download offer
   const showVersionInfo = () => {
     const cur = (window as any).AndroidNativeBridge?.getApkVersion?.() || (window as any).__NATIVE_APK_VERSION__;
-    const isLatest = cur && (cur.includes('1.5') || cur.includes('сборка 7'));
+    const isLatest = isApkUpToDate(cur);
 
     if (cur && isLatest) {
       showToast(`Установлен актуальный APK: ${cur}. RPG виджет активен!`, 3500);
     } else {
-      showToast('📥 Скачивание единого обновления APK v1.5...', 4000);
+      showToast(`📥 Скачивание единого обновления APK v${LATEST_APK_VERSION}...`, 4000);
       const apkUrl = 'https://shestirukiy.github.io/horosho-v-lesu/HoroshoVLesu.apk';
       setTimeout(() => {
         window.location.href = apkUrl;
@@ -715,6 +843,21 @@ function setupVersionDisplay() {
 
   headerBadge?.addEventListener('click', showVersionInfo);
   footerBadge?.addEventListener('click', showVersionInfo);
+
+  // 5-tap secret debug trigger on header badge for testing
+  let badgeTapCount = 0;
+  let lastBadgeTap = 0;
+  headerBadge?.addEventListener('click', () => {
+    const now = Date.now();
+    if (now - lastBadgeTap > 2500) badgeTapCount = 1;
+    else badgeTapCount++;
+    lastBadgeTap = now;
+
+    if (badgeTapCount >= 5) {
+      badgeTapCount = 0;
+      (window as any).simulateAbsenceAlert();
+    }
+  });
 }
 
 // Register Service Worker for seamless background auto-updates

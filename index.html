@@ -711,6 +711,68 @@
         cursor: pointer;
         font-weight: 700;
       }
+
+      /* Comic Speech Bubble (Appears when absent > 2 days & partner changed something) */
+      .inapp-comic-bubble {
+        position: relative;
+        background: #ffffff;
+        color: #1a202c;
+        border: 2px solid #2d3436;
+        border-radius: 14px;
+        padding: 8px 12px;
+        margin: 6px 4px 10px 4px;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+        display: none;
+        cursor: pointer;
+        animation: bubblePopIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      }
+
+      .inapp-comic-bubble::before {
+        content: '';
+        position: absolute;
+        top: -9px;
+        right: 32px;
+        width: 0;
+        height: 0;
+        border-left: 8px solid transparent;
+        border-right: 8px solid transparent;
+        border-bottom: 9px solid #2d3436;
+      }
+
+      .inapp-comic-bubble::after {
+        content: '';
+        position: absolute;
+        top: -6px;
+        right: 33px;
+        width: 0;
+        height: 0;
+        border-left: 7px solid transparent;
+        border-right: 7px solid transparent;
+        border-bottom: 8px solid #ffffff;
+      }
+
+      .bubble-content {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .bubble-icon {
+        font-size: 16px;
+        line-height: 1;
+      }
+
+      .bubble-text {
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 1.3;
+        color: #1a202c;
+      }
+
+      @keyframes bubblePopIn {
+        0% { transform: scale(0.8); opacity: 0; }
+        100% { transform: scale(1); opacity: 1; }
+      }
     </style>
   </head>
   <body>
@@ -764,6 +826,14 @@
           </div>
           <div class="avatar-thumb-box" id="avatar-box-irina" title="Нажмите 10 раз для входа как Ирина">
             <img src="./Слой-3.png" alt="Ирина" class="avatar-thumb-img" id="avatar-img-irina" />
+          </div>
+        </div>
+
+        <!-- Comic Speech Bubble (Irina) -->
+        <div class="inapp-comic-bubble" id="comic-bubble-irina" title="Нажмите, чтобы ответить">
+          <div class="bubble-content">
+            <span class="bubble-icon">💭</span>
+            <span class="bubble-text">Никто на меня не обращает внимания...</span>
           </div>
         </div>
 
@@ -825,6 +895,14 @@
           </div>
           <div class="avatar-thumb-box" id="avatar-box-artem" title="Нажмите 10 раз для входа как Артём">
             <img src="./Слой-2.png" alt="Артём" class="avatar-thumb-img" id="avatar-img-artem" />
+          </div>
+        </div>
+
+        <!-- Comic Speech Bubble (Artem) -->
+        <div class="inapp-comic-bubble" id="comic-bubble-artem" title="Нажмите, чтобы ответить">
+          <div class="bubble-content">
+            <span class="bubble-icon">💭</span>
+            <span class="bubble-text">Никто на меня не обращает внимания...</span>
           </div>
         </div>
 
@@ -897,7 +975,7 @@
         <div class="download-apk-bar" style="margin-top: 6px; display: flex; gap: 6px;">
           <a href="https://shestirukiy.github.io/horosho-v-lesu/download.html" target="_blank" class="apk-download-btn" id="btn-download-apk" style="flex: 1; text-align: center; text-decoration: none; background: rgba(46, 204, 113, 0.15); border: 1px solid rgba(46, 204, 113, 0.35); color: #2ecc71; padding: 7px 10px; border-radius: 10px; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s;">
             <span>📲</span>
-            <span>Скачать APK v1.5</span>
+            <span>Скачать APK v1.6.0</span>
           </a>
           <a href="https://shestirukiy.github.io/horosho-v-lesu/HoroshoVLesu.zip" target="_blank" class="apk-download-btn" id="btn-download-zip" style="text-align: center; text-decoration: none; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15); color: #8b9990; padding: 7px 12px; border-radius: 10px; font-size: 12px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 4px;" title="Скачать в ZIP если браузер зависает на APK">
             <span>📦</span>

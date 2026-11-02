@@ -36,7 +36,7 @@ export async function updateStat(category: string, user: string, value: number |
     headers: {
       'Content-Type': 'text/plain;charset=utf-8',
     },
-    body: JSON.stringify({ category, user, value }),
+    body: JSON.stringify({ category, name: user, user, value }),
   });
   const text = await res.text();
   return text.includes('OK');

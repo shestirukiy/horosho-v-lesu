@@ -219,4 +219,49 @@
 
     </LinearLayout>
 
+    <!-- 4. Comic Speech Bubble (Appears when owner is absent >2 days & partner changed something) -->
+    <LinearLayout
+        android:id="@+id/widget_comic_bubble_container"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        android:orientation="vertical"
+        android:gravity="end"
+        android:visibility="gone">
+
+        <!-- Tail pointing UP toward the character's head on the right -->
+        <ImageView
+            android:layout_width="14dp"
+            android:layout_height="8dp"
+            android:layout_marginEnd="28dp"
+            android:src="@drawable/widget_comic_bubble_tail_up"
+            android:contentDescription="" />
+
+        <!-- Bubble Body -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/widget_comic_bubble_bg"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:paddingTop="5dp"
+            android:paddingBottom="5dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/widget_comic_bubble_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Никто на меня не обращает внимания..."
+                android:textColor="#1A202C"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:maxWidth="230dp" />
+        </LinearLayout>
+    </LinearLayout>
+
 </FrameLayout>
